@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("solid-game-engine")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a018b8648668f4e782a2912557df5de291e38935")]
 [assembly: System.Reflection.AssemblyProductAttribute("solid-game-engine")]
 [assembly: System.Reflection.AssemblyTitleAttribute("solid-game-engine")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\darkg\\Desktop\\Projects\\Current\\sold-game-engine\\solid-game-engine\\solid-game-engine\\solid-game-engine.csproj": {}
+    "C:\\Users\\darkg\\Desktop\\Projects\\Current\\solid-game-engine\\solid-game-engine\\solid-game-engine.csproj": {}
   },
   "projects": {
-    "c:\\Users\\darkg\\Desktop\\Projects\\Current\\sold-game-engine\\solid-game-engine\\solid-game-engine\\solid-game-engine.csproj": {
+    "C:\\Users\\darkg\\Desktop\\Projects\\Current\\solid-game-engine\\solid-game-engine\\solid-game-engine.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\darkg\\Desktop\\Projects\\Current\\sold-game-engine\\solid-game-engine\\solid-game-engine\\solid-game-engine.csproj",
+        "projectUniqueName": "C:\\Users\\darkg\\Desktop\\Projects\\Current\\solid-game-engine\\solid-game-engine\\solid-game-engine.csproj",
         "projectName": "solid-game-engine",
-        "projectPath": "c:\\Users\\darkg\\Desktop\\Projects\\Current\\sold-game-engine\\solid-game-engine\\solid-game-engine\\solid-game-engine.csproj",
+        "projectPath": "C:\\Users\\darkg\\Desktop\\Projects\\Current\\solid-game-engine\\solid-game-engine\\solid-game-engine.csproj",
         "packagesPath": "C:\\Users\\darkg\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\darkg\\Desktop\\Projects\\Current\\sold-game-engine\\solid-game-engine\\solid-game-engine\\obj\\",
+        "outputPath": "C:\\Users\\darkg\\Desktop\\Projects\\Current\\solid-game-engine\\solid-game-engine\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -60,6 +60,10 @@
             "MonoGame.Framework.DesktopGL": {
               "target": "Package",
               "version": "[3.8.2.1105, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )"
             }
           },
           "imports": [

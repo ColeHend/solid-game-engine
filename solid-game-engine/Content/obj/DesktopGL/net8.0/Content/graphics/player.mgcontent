@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <SourceFile>c:/Users/darkg/Desktop/Projects/Current/sold-game-engine/solid-game-engine/solid-game-engine/Content/graphics/player.png</SourceFile>
+  <SourceFile>c:/Users/darkg/Desktop/Projects/Current/solid-game-engine/solid-game-engine/Content/graphics/player.png</SourceFile>
   <SourceTime>2024-10-10T15:02:31.2271776-06:00</SourceTime>
-  <DestFile>c:/Users/darkg/Desktop/Projects/Current/sold-game-engine/solid-game-engine/solid-game-engine/Content/bin/DesktopGL/Content/graphics/player.xnb</DestFile>
-  <DestTime>2024-10-12T12:58:28.1966423-06:00</DestTime>
+  <DestFile>c:/Users/darkg/Desktop/Projects/Current/solid-game-engine/solid-game-engine/Content/bin/DesktopGL/Content/graphics/player.xnb</DestFile>
+  <DestTime>2024-10-12T13:03:33.7972801-06:00</DestTime>
   <Importer>TextureImporter</Importer>
   <ImporterTime>2024-08-16T11:05:56-06:00</ImporterTime>
   <Processor>TextureProcessor</Processor>

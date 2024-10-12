@@ -4,12 +4,14 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
-    <File>c:/Users/darkg/Desktop/Projects/Current/sold-game-engine/solid-game-engine/solid-game-engine/Content/graphics/blackWindowSkin.png</File>
-    <File>c:/Users/darkg/Desktop/Projects/Current/sold-game-engine/solid-game-engine/solid-game-engine/Content/graphics/mountainTileset.png</File>
-    <File>c:/Users/darkg/Desktop/Projects/Current/sold-game-engine/solid-game-engine/solid-game-engine/Content/graphics/player.png</File>
-    <File>c:/Users/darkg/Desktop/Projects/Current/sold-game-engine/solid-game-engine/solid-game-engine/Content/graphics/playerGhost.png</File>
+    <File>c:/Users/darkg/Desktop/Projects/Current/solid-game-engine/solid-game-engine/Content/fonts/GameFont.spritefont</File>
+    <File>c:/Users/darkg/Desktop/Projects/Current/solid-game-engine/solid-game-engine/Content/graphics/blackWindowSkin.png</File>
+    <File>c:/Users/darkg/Desktop/Projects/Current/solid-game-engine/solid-game-engine/Content/graphics/mountainTileset.png</File>
+    <File>c:/Users/darkg/Desktop/Projects/Current/solid-game-engine/solid-game-engine/Content/graphics/player.png</File>
+    <File>c:/Users/darkg/Desktop/Projects/Current/solid-game-engine/solid-game-engine/Content/graphics/playerGhost.png</File>
   </SourceFiles>
   <DestFiles>
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />

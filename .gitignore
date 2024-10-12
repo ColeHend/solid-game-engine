@@ -1,11 +1,12 @@
-solid-game-engine/bin
-solid-game-engine/Content/bin
-solid-game-engine/Content/obj
+# Ignore all bin and obj folders in the entire project
+**/bin/
+**/obj/
 
-/solid-game-engine/bin
-/solid-game-engine/Content/bin
-/solid-game-engine/Content/obj
-
+# Ignore other build artifacts
 *.exe
 *.dll
 *.cache
+
+# Optional: Ignore Visual Studio and VSCode folders
+.vs/
+.vscode/

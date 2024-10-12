@@ -1,3 +1,11 @@
 solid-game-engine/bin
 solid-game-engine/Content/bin
 solid-game-engine/Content/obj
+
+/solid-game-engine/bin
+/solid-game-engine/Content/bin
+/solid-game-engine/Content/obj
+
+*.exe
+*.dll
+*.cache

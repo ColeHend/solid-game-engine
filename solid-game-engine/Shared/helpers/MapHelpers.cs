@@ -43,14 +43,27 @@ namespace solid_game_engine.Shared.helpers
 		}
 		public static TileMap LoadTileMap(int mapNumber)
 		{
-				string thePath = $"{Directory.GetCurrentDirectory()}\\maps\\map0{mapNumber}.jsonc";
-				using (StreamReader reader = new StreamReader(thePath))
-				{
-					string json = reader.ReadToEnd();
-					TileMap tileMap = JsonConvert.DeserializeObject<TileMap>(json);
-					return tileMap;
-				}
+			string currentDir = Directory.GetCurrentDirectory();
+			TileMap tileMap;
+			using (StreamReader reader = new StreamReader($"{currentDir}\\maps\\map0{mapNumber}.jsonc"))
+			{
+				string json = reader.ReadToEnd();
+				tileMap = JsonConvert.DeserializeObject<TileMap>(json);
+			}
+
+			return tileMap;
 		}
+
+		public static TileSetEntity LoadTileSet(this TileMap tileMap)
+		{
+			var currentDir = Directory.GetCurrentDirectory();
+			using (StreamReader reader = new StreamReader($"{currentDir}\\maps\\tilesets\\{tileMap.TilesetName}.jsonc"))
+			{
+				string json = reader.ReadToEnd();
+				return JsonConvert.DeserializeObject<TileSetEntity>(json);
+			}
+		}
+
 		public static void DrawLayer(this List<List<List<int>>> TileMap, SpriteBatch _spriteBatch, int TileSize, Vector2 Origin, TileSet tileSet, int layer, RectangleF screenCoordinates)
 		{
 			for (int i = 0; i < TileMap[layer].Count; i++)

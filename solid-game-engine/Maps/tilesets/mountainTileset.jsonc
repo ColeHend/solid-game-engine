@@ -1,0 +1,20 @@
+{
+	"name": "mountainTileset",
+	"tileSize": 32,
+	"width": 256,
+	"height": 896,
+	"passable": {
+		"5": false,
+		"6": false,
+		"7": false,
+		"13": false,
+		"14": false,
+		"15": false,
+		"21": false,
+		"22": false,
+		"23": false
+	},
+	"effects": {
+		"21": 1
+	}
+}

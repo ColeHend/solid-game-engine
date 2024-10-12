@@ -1,10 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using MonoGame.Extended.ViewportAdapters;
+using Newtonsoft.Json;
 using solid_game_engine.Shared.Entities;
+using solid_game_engine.Shared.entity;
 using solid_game_engine.Shared.helpers;
 
 namespace solid_game_engine;
@@ -26,8 +29,9 @@ public class Game1 : Game
 			IsMouseVisible = true;
 			// --- Load Level ---
 			TileMap tileMap = MapHelpers.LoadTileMap(1);
-			Map map1 = new Map(this, Vector2.Zero, tileMap);
-			Map map2 = new Map(this, new Vector2(map1.width, 0), tileMap);
+			TileSetEntity tileSet = tileMap.LoadTileSet();
+			Map map1 = new Map(this, Vector2.Zero, tileMap, tileSet);
+			Map map2 = new Map(this, new Vector2(map1.width, 0), tileMap, tileSet);
 			CurrentLevel = new Level(this, new List<Map>()
 			{
 				map1,
@@ -54,7 +58,7 @@ public class Game1 : Game
 			Currents.CurrentFont = Content.Load<SpriteFont>("fonts\\GameFont");
 			// -------------
 			Vector2 playerOrigin = new Vector2(12 * 32, 8 * 32);
-			var player = new GameEntity(Currents.CurrentPlayerskin, (int)playerOrigin.X, (int)playerOrigin.Y, 32, 48, true, true);
+			var player = new PlayerEntity(Currents, (int)playerOrigin.X, (int)playerOrigin.Y);
 			player._speed = 100f;
 			Currents.Player = player;
 

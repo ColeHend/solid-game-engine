@@ -27,6 +27,9 @@
 		<None Include=".\Maps\*">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+		<None Include=".\Maps\tilesets\*">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MonoGame.Extended" Version="4.0.3" />

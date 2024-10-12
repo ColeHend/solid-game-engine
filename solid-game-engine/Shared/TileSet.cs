@@ -19,11 +19,26 @@ public class TileSet
 	public float TileSize { get; set; }
 	public float Width { get; set; }
 	public float Height { get; set; }
-	public TileSet(Texture2D texture, float width, float height, float tileSize)
+	public Dictionary<int, bool> Passable { get; set; }
+	public Dictionary<int, int> Effects { get; set; }
+	public TileSet(Texture2D texture, TileSetEntity tileSetEntity)
 	{
-		TileSize = tileSize;
-		Width = width;
-		Height = height;
+		TileSize = tileSetEntity.TileSize;
+		Width = tileSetEntity.Width;
+		Height = tileSetEntity.Height;
 		Tileset = texture.GetSpriteSheet((int)TileSize, (int)TileSize);
-	}			
+		Passable = tileSetEntity.Passable;
+		Effects = tileSetEntity.Effects;
+	}
+		
+}
+
+public class TileSetEntity
+{
+	public string Name { get; set; }
+	public int TileSize { get; set; }
+	public int Width { get; set; }
+	public int Height { get; set; }
+	public Dictionary<int, bool> Passable { get; set; }
+	public Dictionary<int, int> Effects { get; set; }
 }

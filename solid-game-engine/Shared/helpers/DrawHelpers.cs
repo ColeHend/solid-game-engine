@@ -10,6 +10,13 @@ namespace solid_game_engine.Shared.helpers
 {
     public static class DrawHelpers
 	{
+		public static void DrawScaledText(this Currents Currents, SpriteBatch spriteBatch, string text, float x, float y, int scale, Color? color = null)
+		{
+			Color theColor = color ?? Color.White;
+			var titleTextPos = new Vector2(x, y);
+			var toDrawFont = Currents.CurrentFont;
+			spriteBatch.DrawString(toDrawFont, text, titleTextPos, theColor, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
+		}
 		public static void DrawWindow(this SpriteBatch _spriteBatch, Currents _currents, int x, int y, int width, int height)
 		{
 			var windowSkin = _currents.CurrentWindowSkin.GetSpriteSheet(32, 32);

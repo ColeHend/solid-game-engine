@@ -16,5 +16,10 @@ namespace solid_game_engine.Shared.helpers
 		{
 			return number > min && number < max;
 		}
+
+		public static bool InRange(int number, int min, int max)
+		{
+			return number > min && number < max;
+		}
 	}
 }

@@ -24,11 +24,13 @@ namespace solid_game_engine.Shared.Entities
 			public float height { get; set; }
 			private int TileSize { get; set; }
 			private Game1 _game { get; set; }
+			private OrthographicCamera _camera { get; set; }
 
-			public Map(Game1 game, Microsoft.Xna.Framework.Vector2 origin, TileMap tileMap, TileSetEntity tileSetEntity)
+			public Map(SceneManager sceneManager, Microsoft.Xna.Framework.Vector2 origin, TileMap tileMap, TileSetEntity tileSetEntity, OrthographicCamera camera)
 			{
-				_game = game;
+				_game = sceneManager.Game;
 				TileMap = tileMap;
+				_camera = camera;
 				width = tileMap.Tiles[0].Count;
 				height = tileMap.Tiles.Count;
 				TileSetEntity = tileSetEntity;
@@ -45,6 +47,7 @@ namespace solid_game_engine.Shared.Entities
 			public TileSet tileSet{ get; set; }
 			public int Width { get => (int)width * (int)(tileSet?.TileSize ?? 32); }
 			public int Height { get => (int)height * (int)(tileSet?.TileSize ?? 32); }
+			public List<List<Tile>> TileInfo { get; set; } = new List<List<Tile>>();
 
 
 			public void Initialize(GraphicsDeviceManager _graphicsDeviceManager)
@@ -62,7 +65,72 @@ namespace solid_game_engine.Shared.Entities
 				var loX = addOrigin(4 * (int)tileSet.TileSize, Origin.X);
 				var loY = addOrigin(4 * (int)tileSet.TileSize, Origin.Y);
 				GameEntities.Add(new GameEntity(ghostTexture, loX, loY, 32, 48));
-				
+				List<TileCollide> collisionTiles = new List<TileCollide>();
+				for (int X = 0; X < TileMap.Tiles.Count; X++)
+				{
+					TileInfo.Add(new List<Tile>());
+					for (int Y = 0; Y < TileMap.Tiles[X].Count; Y++)
+					{
+						TileInfo[X].Add(new Tile());
+						var tileNumber = TileMap.Tiles[X][Y];
+						var newTile = new Tile();
+						newTile.TileNums = tileNumber;
+						newTile.X = X;
+						newTile.Y = Y;
+						newTile.Size = TileSetEntity.TileSize;
+						// --- Passable ---
+						var hasLayerOne = tileSet.Passable.ContainsKey(tileNumber[0]);
+						if (hasLayerOne)
+						{
+							var layerOnePassable = tileSet.Passable[tileNumber[0]];
+							newTile.Passable = layerOnePassable;
+						}
+						if (tileNumber.Count >= 2)
+						{
+							var hasLayerTwo = tileSet.Passable.ContainsKey(tileNumber[1]);
+							if (hasLayerTwo)
+							{
+								var layerTwoPassable = tileSet.Passable[tileNumber[1]];
+								newTile.Passable = layerTwoPassable;
+							}
+						}
+						// --- Effects ---
+						var hasLayerOneEffect = tileSet.Effects.ContainsKey(tileNumber[0]);
+						if (hasLayerOneEffect)
+						{
+							var layerOneEffect = tileSet.Effects[tileNumber[0]];
+							newTile.Effect = layerOneEffect;
+						}
+						if (tileNumber.Count >= 2)
+						{
+							var hasLayerTwoEffect = tileSet.Effects.ContainsKey(tileNumber[1]);
+							if (hasLayerTwoEffect)
+							{
+								var layerTwoEffect = tileSet.Effects[tileNumber[1]];
+								newTile.Effect = layerTwoEffect;
+							}
+							if (!hasLayerOneEffect && !hasLayerTwoEffect)
+							{
+								newTile.Effect = 0;
+							}
+							
+						} else if (!hasLayerOneEffect)
+						{
+							newTile.Effect = 0;
+						}
+						TileInfo[X][Y] = newTile;
+						if (!newTile.Passable)
+						{
+							var collideTile = new TileCollide(newTile);
+							
+							collisionTiles.Add(collideTile);
+						}
+					}
+				}
+				foreach (var tile in collisionTiles)
+				{
+					_collisionComponent.Insert(tile);
+				}
 				foreach (IEntity entity in GameEntities)
 				{
 					_collisionComponent.Insert(entity);
@@ -81,7 +149,7 @@ namespace solid_game_engine.Shared.Entities
 			public void Draw(SpriteBatch _spriteBatch, Matrix transformMatrix)
 			{
 				_spriteBatch.Begin(transformMatrix: transformMatrix);
-				var ScreenCoordinates = _game._camera.BoundingRectangle;
+				var ScreenCoordinates = _camera.BoundingRectangle;
 				TileMap.Tiles.DrawLayer(_spriteBatch, TileSize, Origin, tileSet, 1, ScreenCoordinates);
 				TileMap.Tiles.DrawLayer(_spriteBatch, TileSize, Origin, tileSet, 2, ScreenCoordinates);
 				_spriteBatch.End();

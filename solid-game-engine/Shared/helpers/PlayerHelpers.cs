@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using solid_game_engine.Shared.Entities;
+using solid_game_engine.Shared.entity;
 using solid_game_engine.Shared.Enums;
 
 namespace solid_game_engine.Shared.helpers
@@ -80,32 +81,26 @@ namespace solid_game_engine.Shared.helpers
 			}
 			return true; 
 		}
-		public static void GetInput(this Game1 game, GameTime gameTime, float speed, Dictionary<Direction, Map> mapDict)
+		
+		public static void GetFollowCamera(this PlayerEntity Player, OrthographicCamera camera)
 		{
-			var camera = game._camera;
-			var playerCanMove = game.Currents.Player.CanMove;
+			camera.LookAt(new Vector2(Player.X, Player.Y));
+		}
+		
+		public static void GetCameraInput(this PlayerEntity Player, GameTime gameTime, float speed, Dictionary<Direction, Map> mapDict, Level CurrentLevel, OrthographicCamera camera)
+		{
+			
+			var playerCanMove = Player.CanMove;
 			var kState = Keyboard.GetState();
 			var cameraDirection = Vector2.Zero;
 			speed = speed * (float)0.6;
-			var currentMap = game.CurrentLevel.currentMaps.FindPlayersMap(game.Currents.Player);
-			// Camera Direction Checks
-			// ---- Is Centered -----
-			var centerX = camera.Center.X;
-			var centerY = camera.Center.Y;
-			var tile = 48;
-			bool centeredX = game.Currents.Player.X.InRange(centerX - tile, centerX + tile);
-			bool centeredY = game.Currents.Player.Y.InRange(centerY - tile, centerY + tile);
-			// --- UP
-			bool upCheck = game.Currents.Player.Y >= 0;
-			// --- DOWN
-			bool downCheck = camera.BoundingRectangle.Y + camera.BoundingRectangle.Height <= currentMap.Height && centeredY;
-			// --- LEFT
-			bool leftCheck = game.Currents.Player.X >= 0;
-			// --- RIGHT
-			bool rightCheck = camera.BoundingRectangle.X + camera.BoundingRectangle.Width <= currentMap.Width && centeredX;
+			var currentMap = CurrentLevel.currentMaps.FindPlayersMap(Player);
+			var atTopEdge = camera.BoundingRectangle.Top < 16;
+			var shouldPanDown = atTopEdge && Player.Y.InRange(camera.Center.Y - 64, camera.Center.Y + 64) || !atTopEdge;
+			var atLeftEdge = camera.BoundingRectangle.Left < 16;
 
 	    // --------------- Player Checks
-			var _player = game.Currents.Player;
+			var _player = Player;
 			// -------- Up
 			bool canGoUp;
 			if (mapDict.ContainsKey(Direction.UP))
@@ -122,7 +117,7 @@ namespace solid_game_engine.Shared.helpers
 				canGoDown = _player.DirectionCheck(Direction.DOWN, mapDict, currentMap);
 			} else
 			{
-				canGoDown = _player.Y < currentMap.Origin.Y + currentMap.Height;
+				canGoDown = _player.Y < currentMap.Origin.Y + currentMap.Height && shouldPanDown;
 			}
 			// -------- Left
 			bool canGoLeft;
@@ -141,30 +136,44 @@ namespace solid_game_engine.Shared.helpers
 			} else {
 				canGoRight = _player.X < currentMap.Origin.X + currentMap.Width;
 			}
+			var upPressed = _player.Input.isPressed(Controls.UP);
+			var downPressed = _player.Input.isPressed(Controls.DOWN);
+			var leftPressed = _player.Input.isPressed(Controls.LEFT);
+			var rightPressed = _player.Input.isPressed(Controls.RIGHT);
+
+			var totalUp = upPressed && !downPressed && !rightPressed && !leftPressed;
+			var totalDown = downPressed && !upPressed && !rightPressed && !leftPressed;
+			var totalLeft = leftPressed && !rightPressed && !upPressed && !downPressed;
+			var totalRight = rightPressed && !leftPressed && !upPressed && !downPressed;
 			
 			// ---------------
-			if (playerCanMove[Direction.UP] && kState.IsKeyDown(Keys.Up) && canGoUp)
+			
+			if (playerCanMove[Direction.UP] && canGoUp && totalUp)
 			{
 				cameraDirection -= Vector2.UnitY;			
 				camera.Move(cameraDirection * speed * gameTime.GetElapsedSeconds());
-			} else if (playerCanMove[Direction.DOWN] && kState.IsKeyDown(Keys.Down) && canGoDown) // && downCheck
+			} 
+			if (playerCanMove[Direction.DOWN] && canGoDown && totalDown) // downCheck
 			{
 				cameraDirection += Vector2.UnitY;
 				camera.Move(cameraDirection * speed * gameTime.GetElapsedSeconds());
-			} else if (playerCanMove[Direction.LEFT] && kState.IsKeyDown(Keys.Left)  && canGoLeft)
+			} 
+			if (playerCanMove[Direction.LEFT] && canGoLeft && totalLeft)
 			{
 				cameraDirection -= Vector2.UnitX;				
 				camera.Move(cameraDirection * speed * gameTime.GetElapsedSeconds());
-			} else if (playerCanMove[Direction.RIGHT] && kState.IsKeyDown(Keys.Right) && canGoRight) //  && rightCheck
+			} 
+			if (playerCanMove[Direction.RIGHT] && canGoRight && totalRight) //  rightCheck
 			{
 				cameraDirection += Vector2.UnitX;
 				camera.Move(cameraDirection * speed * gameTime.GetElapsedSeconds());
 			}
 		}
-		public static void GetInput(this GameEntity _player, GameTime gameTime, Game1 game, Dictionary<Direction, Map> mapDict)
+		public static void GetInput(this PlayerEntity _player, GameTime gameTime, Level CurrentLevel, Dictionary<Direction, Map> mapDict)
 		{
 			var kState = Keyboard.GetState();
-			var currentMap = game.CurrentLevel.currentMaps.FindPlayersMap(_player);
+			var currentMap = CurrentLevel.currentMaps.FindPlayersMap(_player);
+			// --------- Check Map Origin Can Move
 			bool canGoUp;
 			if (mapDict.ContainsKey(Direction.UP))
 			{
@@ -199,20 +208,33 @@ namespace solid_game_engine.Shared.helpers
 			} else {
 				canGoRight = _player.X < currentMap.Origin.X + currentMap.Width;
 			}
+			var upPressed = _player.Input.isPressed(Controls.UP);
+			var downPressed = _player.Input.isPressed(Controls.DOWN);
+			var leftPressed = _player.Input.isPressed(Controls.LEFT);
+			var rightPressed = _player.Input.isPressed(Controls.RIGHT);
 			
-			if (kState.IsKeyDown(Keys.Up) && canGoUp)
+			var totalUp = upPressed && !downPressed && !rightPressed && !leftPressed;
+			var totalDown = downPressed && !upPressed && !rightPressed && !leftPressed;
+			var totalLeft = leftPressed && !rightPressed && !upPressed && !downPressed;
+			var totalRight = rightPressed && !leftPressed && !upPressed && !downPressed;
+
+			if (totalUp && canGoUp)
 			{
 				_player.Move(gameTime, Controls.UP);					
-			} else if (kState.IsKeyDown(Keys.Down) && canGoDown)
+			} 
+			if (totalDown && canGoDown)
 			{
 				_player.Move(gameTime, Controls.DOWN);
-			} else if (kState.IsKeyDown(Keys.Left) && canGoLeft)
+			} 
+			if (totalLeft && canGoLeft)
 			{
 				_player.Move(gameTime, Controls.LEFT);					
-			} else if (kState.IsKeyDown(Keys.Right) && canGoRight)
+			} 
+			if (totalRight && canGoRight)
 			{
 				_player.Move(gameTime, Controls.RIGHT);
-			} else
+			} 
+			if (!totalUp && !totalDown && !totalLeft && !totalRight)
 			{
 				_player.Move(gameTime, Controls.NONE);
 			}

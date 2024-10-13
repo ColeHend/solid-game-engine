@@ -10,6 +10,7 @@ using MonoGame.Extended;
 using MonoGame.Extended.Collisions;
 using MonoGame.Extended.Graphics;
 using solid_game_engine.Shared.helpers;
+using solid_game_engine.Shared.scenes;
 
 namespace solid_game_engine.Shared.Entities;
 
@@ -20,10 +21,14 @@ public class Level
 	public Dictionary<Direction, Map> MapDirections { get; set; }
 	private readonly Game1 _game;
 
-	public Level(Game1 game, List<Map> maps)
+	public Func<int,int, Tile> GetTile { get; set; }
+	public Func<Tile> GetPlayerTile { get; set; }
+	public Scene_Game _sceneGame { get; }
+	public Level(Scene_Game sceneGame, SceneManager sceneManager, List<Map> maps)
 	{
 		Maps = maps;
-		_game = game;
+		_sceneGame = sceneGame;
+		_game = sceneManager.Game;
 	}
 
 	public void Initialize(GraphicsDeviceManager _graphicsDeviceManager)
@@ -43,6 +48,15 @@ public class Level
 			map.LoadContent(contentManager);
 			map._collisionComponent.Insert(_game.Currents.Player);
 		}
+		GetTile = (int x, int y) => {
+			
+			return MapDirections[Direction.NONE].TileInfo[y][x];
+		};
+		GetPlayerTile = () => {
+			var playerX = (int)_game.Currents.Player.X / 32;
+			var playerY = (int)_game.Currents.Player.Y / 32;
+			return GetTile(playerX, playerY);
+		};
 	}
 
 	public void Update(GameTime gameTime)
@@ -72,7 +86,7 @@ public class Level
 	{
 		foreach (var map in currentMaps)
 		{
-			map.Draw(_spriteBatch, _game.transformMatrix);
+			map.Draw(_spriteBatch, _sceneGame.transformMatrix);
 		}
 	}
 }

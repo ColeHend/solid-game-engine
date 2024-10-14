@@ -29,7 +29,6 @@ namespace solid_game_engine.Shared.entity.NPCActions
 		public void SetInput(InputWrap input)
 		{
 			Input = input;
-			
 		}
 
 		public void Draw(SpriteBatch spriteBatch)

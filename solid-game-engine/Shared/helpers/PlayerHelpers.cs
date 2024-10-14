@@ -107,21 +107,20 @@ namespace solid_game_engine.Shared.helpers
 			camera.LookAt(new Vector2(Player.X, Player.Y));
 		}
 		
-		public static void GetCameraInput(this PlayerEntity Player, GameTime gameTime, float speed, Level CurrentLevel, OrthographicCamera camera)
+		public static void GetCameraInput(this PlayerEntity _player, GameTime gameTime, float speed, Level CurrentLevel, OrthographicCamera camera)
 		{
 			
-			var playerCanMove = Player.CanMove;
+			var playerCanMove = _player.CanMove;
 			var kState = Keyboard.GetState();
 			var cameraDirection = Vector2.Zero;
 			speed = speed * (float)0.6;
-			var currentMap = CurrentLevel.currentMaps.FindPlayersMap(Player);
+			var currentMap = CurrentLevel.currentMaps.FindPlayersMap(_player);
 			var atTopEdge = camera.BoundingRectangle.Top < 16;
-			var shouldPanDown = atTopEdge && Player.Y.InRange(camera.Center.Y - 64, camera.Center.Y + 64) || !atTopEdge;
+			var shouldPanDown = atTopEdge && _player.Y.InRange(camera.Center.Y - 64, camera.Center.Y + 64) || !atTopEdge;
 			var atLeftEdge = camera.BoundingRectangle.Left < 16;
 
 	    // --------------- Player Checks
-			var _player = Player;
-			var mapDict = CurrentLevel.MapDirections;
+			var mapDict = _player.MapDirections;
 			// -------- Up
 			bool canGoUp;
 			if (mapDict.ContainsKey(Direction.UP))

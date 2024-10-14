@@ -19,7 +19,6 @@ public class Level
 {
 	private List<Map> Maps { get; set; }
 	public List<Map> currentMaps { get; set; } = new List<Map>();
-	public Dictionary<Direction, Map> MapDirections { get; set; }
 	private readonly Game1 _game;
 
 	public Func<Dictionary<Direction, Map>, int, int, Tile> GetTile { get; set; }
@@ -43,8 +42,10 @@ public class Level
 
 	public void LoadContent(ContentManager contentManager)
 	{
-		MapDirections = Maps.GetMapDirections(_game);
-		currentMaps.AddRange(MapDirections.Values);
+		_game.Currents.Player.ForEach(player => {
+			player.MapDirections = Maps.GetMapDirections(_game);
+		});
+		currentMaps.AddRange(_game.Currents.Player[0].MapDirections.Values);
 		for (int i = 0; i < Maps.Count; i++)
 		{
 			Maps[i].LoadContent(contentManager);
@@ -64,25 +65,22 @@ public class Level
 
 	public void Update(GameTime gameTime)
 	{
-		if (MapDirections.ContainsKey(Direction.NONE))
+		foreach (var player in _game.Currents.Player)
 		{
-			foreach (var player in _game.Currents.Player)
+			if (player.MapDirections != null && player.MapDirections.ContainsKey(Direction.NONE))
 			{
-				if (player.MapDirections != null && player.MapDirections.ContainsKey(Direction.NONE))
+				var currentMap = player.MapDirections[Direction.NONE];
+				var onCurrentX = player.X.InRange(currentMap.Origin.X, currentMap.Origin.X + currentMap.Width);
+				var onCurrentY = player.Y.InRange(currentMap.Origin.Y, currentMap.Origin.Y + currentMap.Height);
+				if (!onCurrentX || !onCurrentY)
 				{
-					var currentMap = player.MapDirections[Direction.NONE];
-					var onCurrentX = player.X.InRange(currentMap.Origin.X, currentMap.Origin.X + currentMap.Width);
-					var onCurrentY = player.Y.InRange(currentMap.Origin.Y, currentMap.Origin.Y + currentMap.Height);
-					if (!onCurrentX || !onCurrentY)
+					player.MapDirections = Maps.GetMapDirections(_game, player.Input.PlayerIndex);
+					int currentMapLength = currentMaps.Count;
+					currentMaps.AddRange(player.MapDirections.Values);
+					currentMaps.RemoveRange(0, currentMapLength);
+					if (MapChangeAction != null)
 					{
-						player.MapDirections = Maps.GetMapDirections(_game, player.Input.PlayerIndex);
-						int currentMapLength = currentMaps.Count;
-						currentMaps.AddRange(player.MapDirections.Values);
-						currentMaps.RemoveRange(0, currentMapLength);
-						if (MapChangeAction != null)
-						{
-							MapChangeAction(player);
-						}
+						MapChangeAction(player);
 					}
 				}
 			}

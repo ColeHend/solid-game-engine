@@ -38,6 +38,9 @@ namespace solid_game_engine.Shared
 	{
 		public IShapeF Bounds { get; }
 
+		public bool _IsPlayer { get; } = false;
+		public bool IsTile { get; } = true;
+
 		public TileCollide(Tile tile)
 		{
 			double diff = 0.6;

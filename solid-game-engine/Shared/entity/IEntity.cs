@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
@@ -9,6 +10,7 @@ using MonoGame.Extended;
 using MonoGame.Extended.Animations;
 using MonoGame.Extended.Collisions;
 using MonoGame.Extended.Graphics;
+using solid_game_engine.Shared.entity;
 using solid_game_engine.Shared.Enums;
 using solid_game_engine.Shared.helpers;
 
@@ -24,6 +26,8 @@ public enum Direction
 }
 	public interface IEntity : ICollisionActor
 	{
+		bool _IsPlayer { get; }
+		bool IsTile { get;}
 		public void Update(GameTime gameTime);
 		public void Draw(SpriteBatch spriteBatch);
 	}
@@ -34,6 +38,7 @@ public class GameEntity : IEntity
 		public Direction _facing { get; set; }
 		public float _speed { get; set; } = 100f;
 		public IShapeF Bounds { get; }
+		public bool IsTile { get; } = false;
 		private SpriteSheet _spriteSheet { get; set; }
 
 		private RectangleF _position { get; set; }
@@ -41,7 +46,7 @@ public class GameEntity : IEntity
 		private string _lastAnimation { get; set; } = "face-down";
 		
 		private List<Direction> MovementQue { get; set; } = new List<Direction>();
-		private bool _IsPlayer { get; set; }
+		public bool _IsPlayer { get; set; }
 		private bool _pushable { get; set; }
 		public Dictionary<Direction, bool> CanMove { get; set; } = new Dictionary<Direction, bool>();
 
@@ -130,7 +135,7 @@ public class GameEntity : IEntity
 			return "face-down";
 		}
 
-		public void OnCollision(CollisionEventArgs collisionInfo)
+		public virtual void OnCollision(CollisionEventArgs collisionInfo)
 		{
 			if (_pushable || _IsPlayer)
 			{
@@ -170,7 +175,7 @@ public class GameEntity : IEntity
 			}
 		}
 		
-		public void Draw(SpriteBatch spriteBatch)
+		public virtual void Draw(SpriteBatch spriteBatch)
 		{
 			spriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: matrix);
 			var toAnimateName = GetAnimationName();
@@ -185,7 +190,7 @@ public class GameEntity : IEntity
 
 		public Matrix matrix { get; set;}
 
-		public void Update(GameTime gameTime)
+		public virtual void Update(GameTime gameTime)
 		{
 			if (_IsPlayer)
 			{

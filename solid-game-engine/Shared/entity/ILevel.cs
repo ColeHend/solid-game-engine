@@ -24,6 +24,7 @@ public class Level
 	public Func<int,int, Tile> GetTile { get; set; }
 	public Func<Tile> GetPlayerTile { get; set; }
 	public Scene_Game _sceneGame { get; }
+	public Action MapChangeAction { get; set; }
 	public Level(Scene_Game sceneGame, SceneManager sceneManager, List<Map> maps)
 	{
 		Maps = maps;
@@ -73,6 +74,10 @@ public class Level
 				int currentMapLength = currentMaps.Count;
 				currentMaps.AddRange(MapDirections.Values);
 				currentMaps.RemoveRange(0, currentMapLength);
+				if (MapChangeAction != null)
+				{
+					MapChangeAction();
+				}
 			}
 		}
 

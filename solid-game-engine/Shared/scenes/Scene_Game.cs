@@ -10,6 +10,7 @@ using MonoGame.Extended.ViewportAdapters;
 using solid_game_engine.Shared.Entities;
 using solid_game_engine.Shared.entity;
 using solid_game_engine.Shared.helpers;
+using solid_game_engine.Shared.Systems;
 
 namespace solid_game_engine.Shared.scenes
 {
@@ -20,6 +21,7 @@ namespace solid_game_engine.Shared.scenes
 		public OrthographicCamera camera { get; set; }
 		public Matrix transformMatrix { get; set;}
 		private SceneManager _sceneManager { get; }
+		private PlayerActionSystem playerActionSystem{ get; }
 
 		public PlayerEntity player { get {
 			return _sceneManager.Game.Currents.Player;
@@ -27,7 +29,7 @@ namespace solid_game_engine.Shared.scenes
 		public Scene_Game(SceneManager sceneManager)
 		{
 			_sceneManager = sceneManager;
-			
+			playerActionSystem = new PlayerActionSystem(_sceneManager);
 		}
 		
 		public void Initialize(GraphicsDeviceManager graphics)
@@ -55,6 +57,10 @@ namespace solid_game_engine.Shared.scenes
 			player._speed = 100f;
 			_sceneManager.Game.Currents.Player = player;
 			CurrentLevel.LoadContent(contentManager);
+			CurrentLevel.MapChangeAction = ()=>{
+				playerActionSystem.SetCurrentMap(CurrentLevel.currentMaps.FindPlayersMap(player));
+			};
+			playerActionSystem.SetCurrentMap(CurrentLevel.currentMaps.FindPlayersMap(player));
 		}
 
 		public void Draw(SpriteBatch spriteBatch)
@@ -66,16 +72,18 @@ namespace solid_game_engine.Shared.scenes
 			// - Draw Player --
 			player.matrix = transformMatrix;
 			player.Draw(spriteBatch);
+			playerActionSystem.Draw(spriteBatch);
 		}
 
 		public void Update(GameTime gameTime)
 		{
 			player.Update(gameTime);
-			player.GetInput(gameTime, CurrentLevel, CurrentLevel.MapDirections);
+			player.GetInput(gameTime, CurrentLevel, CurrentLevel.MapDirections, player.LockMovement);
 			player.GetFollowCamera(camera);
 
 			// --- Update Level ---
 			CurrentLevel.Update(gameTime);
+			playerActionSystem.Update(gameTime);
 		}
 	}
 }

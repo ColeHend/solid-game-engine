@@ -169,7 +169,7 @@ namespace solid_game_engine.Shared.helpers
 				camera.Move(cameraDirection * speed * gameTime.GetElapsedSeconds());
 			}
 		}
-		public static void GetInput(this PlayerEntity _player, GameTime gameTime, Level CurrentLevel, Dictionary<Direction, Map> mapDict)
+		public static void GetInput(this PlayerEntity _player, GameTime gameTime, Level CurrentLevel, Dictionary<Direction, Map> mapDict, bool lockMovement = false)
 		{
 			var kState = Keyboard.GetState();
 			var currentMap = CurrentLevel.currentMaps.FindPlayersMap(_player);
@@ -218,19 +218,19 @@ namespace solid_game_engine.Shared.helpers
 			var totalLeft = leftPressed && !rightPressed && !upPressed && !downPressed;
 			var totalRight = rightPressed && !leftPressed && !upPressed && !downPressed;
 
-			if (totalUp && canGoUp)
+			if (totalUp && canGoUp && !lockMovement)
 			{
 				_player.Move(gameTime, Controls.UP);					
 			} 
-			if (totalDown && canGoDown)
+			if (totalDown && canGoDown && !lockMovement)
 			{
 				_player.Move(gameTime, Controls.DOWN);
 			} 
-			if (totalLeft && canGoLeft)
+			if (totalLeft && canGoLeft && !lockMovement)
 			{
 				_player.Move(gameTime, Controls.LEFT);					
 			} 
-			if (totalRight && canGoRight)
+			if (totalRight && canGoRight && !lockMovement)
 			{
 				_player.Move(gameTime, Controls.RIGHT);
 			} 

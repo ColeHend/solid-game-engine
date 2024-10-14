@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using solid_game_engine.Shared.entity;
 
 namespace solid_game_engine.Shared.helpers
 {
@@ -20,6 +21,22 @@ namespace solid_game_engine.Shared.helpers
 		public static bool InRange(int number, int min, int max)
 		{
 			return number > min && number < max;
+		}
+		
+		public static List<Option> AddOption(this List<Option> list, string name, Action action)
+		{
+			list.Add(new Option(name, list.Count + 1, action));
+			return list;
+		}
+
+		public static List<Option> AddOption(this List<Option> list, string name, Action action, Action intercept)
+		{
+			Action newActionIntercept = ()=>{
+				intercept();
+				action();
+			};
+			list.Add(new Option(name, list.Count + 1, newActionIntercept));
+			return list;
 		}
 	}
 }

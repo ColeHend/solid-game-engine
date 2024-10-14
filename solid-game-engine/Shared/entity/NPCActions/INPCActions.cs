@@ -15,8 +15,10 @@ namespace solid_game_engine.Shared.entity.NPCActions
 {
     public interface INPCActions
     {
-				Action Action { get; }
-				void Update(GameTime gameTime);
-				void Draw(SpriteBatch spriteBatch);
+			string Done { get; set;}
+			Action Action { get; set; }
+			void SetInput(InputWrap input);
+			void Update(GameTime gameTime);
+			void Draw(SpriteBatch spriteBatch);
     }
 }

@@ -12,6 +12,8 @@ using MonoGame.Extended.Collisions;
 using MonoGame.Extended.Graphics;
 using MonoGame.Extended.Particles;
 using Newtonsoft.Json;
+using solid_game_engine.Shared.entity;
+using solid_game_engine.Shared.entity.NPCActions;
 using solid_game_engine.Shared.helpers;
 
 namespace solid_game_engine.Shared.Entities
@@ -36,13 +38,13 @@ namespace solid_game_engine.Shared.Entities
 				TileSetEntity = tileSetEntity;
 				TileSize = tileSetEntity.TileSize;
 				Origin = new Microsoft.Xna.Framework.Vector2(origin.X * TileSize, origin.Y * TileSize);
-				GameEntities = new List<GameEntity>();
+				GameEntities = new List<NpcEntity>();
 				_collisionComponent = new CollisionComponent(new RectangleF(origin.X * TileSize, origin.Y * TileSize, width * TileSize, height * TileSize));
 			}
 
 			public readonly CollisionComponent _collisionComponent;
 			public Microsoft.Xna.Framework.Vector2 Origin { get; set; }
-			public List<GameEntity> GameEntities { get; set; }
+			public List<NpcEntity> GameEntities { get; set; }
 
 			public TileSet tileSet{ get; set; }
 			public int Width { get => (int)width * (int)(tileSet?.TileSize ?? 32); }
@@ -62,9 +64,17 @@ namespace solid_game_engine.Shared.Entities
 
 				Texture2D ghostTexture = contentManager.Load<Texture2D>("graphics\\playerGhost");
 				var addOrigin = (int location, float origin) => location  + (int)origin;
-				var loX = addOrigin(4 * (int)tileSet.TileSize, Origin.X);
-				var loY = addOrigin(4 * (int)tileSet.TileSize, Origin.Y);
-				GameEntities.Add(new GameEntity(ghostTexture, loX, loY, 32, 48));
+				var loX = addOrigin(15 * (int)tileSet.TileSize, Origin.X);
+				var loY = addOrigin(15 * (int)tileSet.TileSize, Origin.Y);
+				var TextBox = new MessageBox(_game.sceneManager);
+				TextBox.Text = "Hello Test Message!";
+				var actions = new List<INPCActions>()
+				{
+					TextBox
+				};
+				var testNPC = new NpcEntity(ghostTexture, loX, loY, 32, 48, actions);
+				testNPC.TriggerType = Enums.NpcTriggerTypes.Action;
+				GameEntities.Add(testNPC);
 				List<TileCollide> collisionTiles = new List<TileCollide>();
 				for (int X = 0; X < TileMap.Tiles.Count; X++)
 				{
@@ -141,7 +151,12 @@ namespace solid_game_engine.Shared.Entities
 			{
 				foreach (var GameEntity in GameEntities)
 				{
+					var preUpdateActionIndex = GameEntity.ActionIndex;
 					GameEntity.Update(gameTime);
+					if (preUpdateActionIndex >= 0 && GameEntity.ActionIndex == -1)
+					{
+						_game.Currents.Player.LockMovement = false;
+					}
 				}
 				_collisionComponent.Update(gameTime);
 			}

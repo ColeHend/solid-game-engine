@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoGame.Extended.Collisions;
 using MonoGame.Extended.Graphics;
+using solid_game_engine.Shared.entity;
 using solid_game_engine.Shared.helpers;
 using solid_game_engine.Shared.scenes;
 
@@ -21,10 +22,10 @@ public class Level
 	public Dictionary<Direction, Map> MapDirections { get; set; }
 	private readonly Game1 _game;
 
-	public Func<int,int, Tile> GetTile { get; set; }
-	public Func<Tile> GetPlayerTile { get; set; }
+	public Func<Dictionary<Direction, Map>, int, int, Tile> GetTile { get; set; }
+	public Func<List<Tile>> GetPlayerTile { get; set; }
 	public Scene_Game _sceneGame { get; }
-	public Action MapChangeAction { get; set; }
+	public Func<PlayerEntity, string> MapChangeAction { get; set; }
 	public Level(Scene_Game sceneGame, SceneManager sceneManager, List<Map> maps)
 	{
 		Maps = maps;
@@ -44,19 +45,20 @@ public class Level
 	{
 		MapDirections = Maps.GetMapDirections(_game);
 		currentMaps.AddRange(MapDirections.Values);
-		foreach (var map in Maps)
+		for (int i = 0; i < Maps.Count; i++)
 		{
-			map.LoadContent(contentManager);
-			map._collisionComponent.Insert(_game.Currents.Player);
+			Maps[i].LoadContent(contentManager);
 		}
-		GetTile = (int x, int y) => {
-			
-			return MapDirections[Direction.NONE].TileInfo[y][x];
+		GetTile = (Dictionary<Direction, Map> Dictionary, int x, int y) => {
+			return Dictionary[Direction.NONE].TileInfo[y][x];
 		};
 		GetPlayerTile = () => {
-			var playerX = (int)_game.Currents.Player.X / 32;
-			var playerY = (int)_game.Currents.Player.Y / 32;
-			return GetTile(playerX, playerY);
+			var playerTiles = _game.Currents.Player.Select(player => {
+				var playerX = (int)player.X / 32;
+				var playerY = (int)player.Y / 32;
+				return GetTile(player.MapDirections, playerX, playerY);
+			});
+			return playerTiles.ToList();
 		};
 	}
 
@@ -64,19 +66,24 @@ public class Level
 	{
 		if (MapDirections.ContainsKey(Direction.NONE))
 		{
-			var currentMap = MapDirections[Direction.NONE];
-			var player = _game.Currents.Player;
-			var onCurrentX = player.X.InRange(currentMap.Origin.X, currentMap.Origin.X + currentMap.Width);
-			var onCurrentY = player.Y.InRange(currentMap.Origin.Y, currentMap.Origin.Y + currentMap.Height);
-			if (!onCurrentX || !onCurrentY)
+			foreach (var player in _game.Currents.Player)
 			{
-				MapDirections = Maps.GetMapDirections(_game);
-				int currentMapLength = currentMaps.Count;
-				currentMaps.AddRange(MapDirections.Values);
-				currentMaps.RemoveRange(0, currentMapLength);
-				if (MapChangeAction != null)
+				if (player.MapDirections != null && player.MapDirections.ContainsKey(Direction.NONE))
 				{
-					MapChangeAction();
+					var currentMap = player.MapDirections[Direction.NONE];
+					var onCurrentX = player.X.InRange(currentMap.Origin.X, currentMap.Origin.X + currentMap.Width);
+					var onCurrentY = player.Y.InRange(currentMap.Origin.Y, currentMap.Origin.Y + currentMap.Height);
+					if (!onCurrentX || !onCurrentY)
+					{
+						player.MapDirections = Maps.GetMapDirections(_game, player.Input.PlayerIndex);
+						int currentMapLength = currentMaps.Count;
+						currentMaps.AddRange(player.MapDirections.Values);
+						currentMaps.RemoveRange(0, currentMapLength);
+						if (MapChangeAction != null)
+						{
+							MapChangeAction(player);
+						}
+					}
 				}
 			}
 		}
@@ -91,7 +98,7 @@ public class Level
 	{
 		foreach (var map in currentMaps)
 		{
-			map.Draw(_spriteBatch, _sceneGame.transformMatrix);
+			map.Draw(_spriteBatch);
 		}
 	}
 }

@@ -27,10 +27,12 @@ namespace solid_game_engine.Shared.Entities
 			private int TileSize { get; set; }
 			private Game1 _game { get; set; }
 			private OrthographicCamera _camera { get; set; }
+			private SceneManager _sceneManager { get; set; }
 
 			public Map(SceneManager sceneManager, Microsoft.Xna.Framework.Vector2 origin, TileMap tileMap, TileSetEntity tileSetEntity, OrthographicCamera camera)
 			{
 				_game = sceneManager.Game;
+				_sceneManager = sceneManager;
 				TileMap = tileMap;
 				_camera = camera;
 				width = tileMap.Tiles[0].Count;
@@ -50,11 +52,28 @@ namespace solid_game_engine.Shared.Entities
 			public int Width { get => (int)width * (int)(tileSet?.TileSize ?? 32); }
 			public int Height { get => (int)height * (int)(tileSet?.TileSize ?? 32); }
 			public List<List<Tile>> TileInfo { get; set; } = new List<List<Tile>>();
-
+			public List<TileCollide> collisionTiles { get; set; } = new List<TileCollide>();
 
 			public void Initialize(GraphicsDeviceManager _graphicsDeviceManager)
 			{
+				_collisionComponent.Initialize();
+				_collisionComponent.IsEnabled = true;
 				
+			}
+
+			private List<GameEntity> GetGameEntitiesDraw()
+			{
+					// Initialize gameEntities with NPC entities (GameEntities)
+					var gameEntities = new List<GameEntity>(GameEntities);
+
+					// Add player entities if they are on this map
+					var playersOnThisMap = _game.Currents.Player.Where(player => new List<Map>(){this}.FindPlayersMap(player) != null);
+					gameEntities.AddRange(playersOnThisMap);
+
+					// Sort gameEntities in-place by the Y-axis (ascending order)
+					gameEntities.Sort((a, b) => a.Y.CompareTo(b.Y));
+
+					return gameEntities;
 			}
 
 			public virtual void LoadContent(ContentManager contentManager)
@@ -72,10 +91,20 @@ namespace solid_game_engine.Shared.Entities
 				{
 					TextBox
 				};
-				var testNPC = new NpcEntity(ghostTexture, loX, loY, 32, 48, actions);
+				var testNPC = new NpcEntity(_sceneManager, ghostTexture, loX, loY, 32, 48, actions);
 				testNPC.TriggerType = Enums.NpcTriggerTypes.Action;
 				GameEntities.Add(testNPC);
-				List<TileCollide> collisionTiles = new List<TileCollide>();
+				this.SetCollisionTiles();
+				this.SetCollisionComponent();
+				for (int i = 0; i < _game.Currents.Player.Count; i++)
+				{
+					_collisionComponent.Insert(_game.Currents.Player[i]);
+				}
+			}
+
+			private void SetCollisionTiles()
+			{
+				collisionTiles = new List<TileCollide>();
 				for (int X = 0; X < TileMap.Tiles.Count; X++)
 				{
 					TileInfo.Add(new List<Tile>());
@@ -131,22 +160,27 @@ namespace solid_game_engine.Shared.Entities
 						TileInfo[X][Y] = newTile;
 						if (!newTile.Passable)
 						{
-							var collideTile = new TileCollide(newTile);
+							var collideTile = new TileCollide(newTile, Origin);
 							
 							collisionTiles.Add(collideTile);
 						}
 					}
 				}
+			}
+
+			public void SetCollisionComponent()
+			{
 				foreach (var tile in collisionTiles)
 				{
+					_collisionComponent.Remove(tile);
 					_collisionComponent.Insert(tile);
 				}
 				foreach (IEntity entity in GameEntities)
 				{
+					_collisionComponent.Remove(entity);
 					_collisionComponent.Insert(entity);
 				}
 			}
-
 			public void Update(GameTime gameTime)
 			{
 				foreach (var GameEntity in GameEntities)
@@ -155,24 +189,47 @@ namespace solid_game_engine.Shared.Entities
 					GameEntity.Update(gameTime);
 					if (preUpdateActionIndex >= 0 && GameEntity.ActionIndex == -1)
 					{
-						_game.Currents.Player.LockMovement = false;
+						var nearestPlayer = _game.Currents.Player.FindNearestPlayer(GameEntity).Input.PlayerIndex;
+						var nearestPlayerIndex = _game.Currents.Player.FindIndex(player => player.Input.PlayerIndex == nearestPlayer);
+						_game.Currents.Player[nearestPlayerIndex].LockMovement = false;
+					}
+				}
+				foreach (var playa in _game.Currents.Player)
+				{
+					var CurrentMap = new List<Map>(){this}.FindPlayersMap(playa);
+					if (CurrentMap != null)
+					{
+						playa.Update(gameTime);
+						playa.GetInput(gameTime, CurrentMap, playa.LockMovement);
+						if (playa.Input.PlayerIndex == PlayerIndex.One)
+						{
+							playa.GetFollowCamera(_camera);
+						}
 					}
 				}
 				_collisionComponent.Update(gameTime);
 			}
 
-			public void Draw(SpriteBatch _spriteBatch, Matrix transformMatrix)
+			public void Draw(SpriteBatch _spriteBatch)
 			{
+				var transformMatrix = _camera.GetViewMatrix();
+
 				_spriteBatch.Begin(transformMatrix: transformMatrix);
 				var ScreenCoordinates = _camera.BoundingRectangle;
 				TileMap.Tiles.DrawLayer(_spriteBatch, TileSize, Origin, tileSet, 1, ScreenCoordinates);
 				TileMap.Tiles.DrawLayer(_spriteBatch, TileSize, Origin, tileSet, 2, ScreenCoordinates);
 				_spriteBatch.End();
 
-				foreach (var GameEntity in GameEntities)
+				var gameEntities = GetGameEntitiesDraw();
+
+				foreach (var GameEntity in gameEntities)
 				{
 					GameEntity.matrix = transformMatrix;
 					GameEntity.Draw(_spriteBatch);
+				}
+				foreach (var entity in gameEntities.Where(entity => entity is NpcEntity))
+				{
+					((NpcEntity)entity).DrawActions(_spriteBatch);
 				}
 				_spriteBatch.Begin(transformMatrix:transformMatrix);
 				TileMap.Tiles.DrawLayer(_spriteBatch, TileSize, Origin, tileSet, 3, ScreenCoordinates);

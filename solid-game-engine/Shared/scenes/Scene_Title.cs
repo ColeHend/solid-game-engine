@@ -24,7 +24,7 @@ namespace solid_game_engine.Shared.scenes
 		public string Name { get; } = "Scene_Title";
 		private SceneManager _sceneManager { get; }
 		private StartOptions SelectedOption { get; set; }
-		private InputWrap inputState { get; set; } = new InputWrap();
+		private InputWrap inputState { get; set; } = new InputWrap(PlayerIndex.One, PlayerIndex.One);
 		private Currents Currents { get {
 			return _sceneManager.Game.Currents;
 		}}

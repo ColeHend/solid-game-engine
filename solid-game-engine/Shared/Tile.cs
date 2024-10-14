@@ -41,14 +41,14 @@ namespace solid_game_engine.Shared
 		public bool _IsPlayer { get; } = false;
 		public bool IsTile { get; } = true;
 
-		public TileCollide(Tile tile)
+		public TileCollide(Tile tile, Vector2 Origin)
 		{
 			double diff = 0.6;
 			var smallerWidth = (int)(tile.Size * diff);
 			var smallerHeight = (int)(tile.Size * diff);
 			var smallDiff = tile.Size - smallerWidth;
 
-			Bounds = new RectangleF(tile.MinX + smallDiff, tile.MinY + smallDiff, smallerWidth, smallerHeight);
+			Bounds = new RectangleF(tile.MinX + smallDiff + Origin.X, tile.MinY + smallDiff + Origin.Y, smallerWidth, smallerHeight);
 		}
 
 		public void Draw(SpriteBatch spriteBatch)

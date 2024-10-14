@@ -17,7 +17,9 @@ namespace solid_game_engine.Shared.entity.NPCActions
 		public MessageBox(SceneManager sceneManager)
 		{
 			currents = sceneManager.Game.Currents;
+			SceneManager = sceneManager;
 		}
+		private SceneManager SceneManager { get; set;}
 		public string Done { get; set; } = null;
 		private Currents currents { get; set;}
 		public string Text { get; set; }
@@ -32,14 +34,17 @@ namespace solid_game_engine.Shared.entity.NPCActions
 
 		public void Draw(SpriteBatch spriteBatch)
 		{
-			spriteBatch.DrawWindow(currents, 0, 0, 12, Text);
+			var theX = 1;
+			var theY = (int)(SceneManager.Game.Window.ClientBounds.Height / 32 / 4 * 3);
+			var theWidth = SceneManager.Game.Window.ClientBounds.Width / 32 - 4;
+			spriteBatch.DrawWindow(currents, theX, theY, theWidth, Text);
 		}
 
 		public void Update(GameTime gameTime)
 		{
 			if (Input != null)
 			{
-				if (Input.isSinglePressed(Controls.A))
+				if (Input.IsSinglePressed(Controls.A))
 				{
 					if (timer > 0)
 					{

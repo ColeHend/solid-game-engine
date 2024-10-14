@@ -14,10 +14,15 @@ namespace solid_game_engine.Shared.helpers
 {
     public static class MapHelpers
 	{
-		public static Dictionary<Direction, Map> GetMapDirections(this List<Map> Maps, Game1 _game)
+		public static Dictionary<Direction, Map> GetMapDirections(this List<Map> Maps, Game1 _game, PlayerIndex playerIndex = PlayerIndex.One)
 		{
 			var mapDict = new Dictionary<Direction, Map>();
-			Map currentMap = Maps.FindPlayersMap(_game.Currents.Player);
+			var thePlayers = _game.Currents.Player.Where(player => player != null && player.X >= 0 && player.Y >= 0).ToList();
+			Map currentMap = Maps.FindPlayersMap(thePlayers.Where(player => player.Input.PlayerIndex == playerIndex).FirstOrDefault());
+			if (currentMap == null)
+			{
+				return mapDict;
+			}
 			Map? UpMap = Maps.Find(x => x.Origin.X == currentMap.Origin.X && x.Origin.Y == currentMap.Origin.Y - currentMap.Height);
 			if (UpMap != null)
 			{
@@ -92,6 +97,10 @@ namespace solid_game_engine.Shared.helpers
 		public static Map FindPlayersMap(this List<Map> maps, GameEntity _player)
 		{
 			Map maybeMap = null;
+			if (_player == null || _player.X < 0 || _player.Y < 0)
+			{
+				return null;
+			}
 			foreach (var map in maps)
 			{
 				var lowX = map.Origin.X;
@@ -113,7 +122,7 @@ namespace solid_game_engine.Shared.helpers
 			{
 				return maybeMap;
 			} else {
-				throw new Exception("Unable To Find Players Map!");
+				return null;
 			}
 		}
 	}

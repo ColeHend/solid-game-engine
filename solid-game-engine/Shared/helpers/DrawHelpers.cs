@@ -8,8 +8,32 @@ using MonoGame.Extended.Graphics;
 
 namespace solid_game_engine.Shared.helpers
 {
-    public static class DrawHelpers
+	public static class DrawHelpers
 	{
+		//
+		// Summary:
+		//     Draws a texture region to the sprite batch.
+		//
+		// Parameters:
+		//   spriteBatch:
+		//     The sprite batch.
+		//
+		//   textureRegion:
+		//     The texture region to draw.
+		//
+		//   position:
+		//     The position to draw the texture region.
+		//
+		//   color:
+		//     The color to tint the texture region.
+		//
+		//   clippingRectangle:
+		//     An optional clipping rectangle.
+		public static void Draw(this SpriteBatch spriteBatch, Texture2DRegion textureRegion, Vector2 position, Color color, float layerDepth, Rectangle? clippingRectangle = null)
+		{
+			spriteBatch.Draw(textureRegion, position, color, 0f, Vector2.Zero, Vector2.One, SpriteEffects.None, layerDepth, clippingRectangle);
+		}
+
 		public static void DrawScaledText(this Currents Currents, SpriteBatch spriteBatch, string text, float x, float y, int scale, Color? color = null)
 		{
 			Color theColor = color ?? Color.White;
@@ -17,6 +41,7 @@ namespace solid_game_engine.Shared.helpers
 			var toDrawFont = Currents.CurrentFont;
 			spriteBatch.DrawString(toDrawFont, text, titleTextPos, theColor, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
 		}
+
 		public static void DrawWindow(this SpriteBatch _spriteBatch, Currents _currents, int x, int y, int width, int height)
 		{
 			var windowSkin = _currents.CurrentWindowSkin.GetSpriteSheet(32, 32);
@@ -27,7 +52,7 @@ namespace solid_game_engine.Shared.helpers
 			var windowMap = new List<List<int>>();
 			for (int h = 0; h < height; h++)
 			{
-				windowMap.Add(new List<int>()); 
+				windowMap.Add(new List<int>());
 				for (int w = 0; w < width; w++)
 				{
 					windowMap[h].Add(7);
@@ -45,7 +70,7 @@ namespace solid_game_engine.Shared.helpers
 						{
 							windowMap[h][w] = 21;
 						}
-						else 
+						else
 						{
 							windowMap[h][w] = 15;
 						}
@@ -66,18 +91,18 @@ namespace solid_game_engine.Shared.helpers
 							{
 								windowMap[h][w] = 2;
 							}
-							else 
+							else
 							{
 								windowMap[h][w] = 2;
 							}
-						} 
+						}
 						else // ---- Bottom Row
 						{
 							if (w == width - 1)
 							{
 								windowMap[h][w] = 21;
 							}
-							else 
+							else
 							{
 								windowMap[h][w] = 20;
 							}
@@ -96,7 +121,7 @@ namespace solid_game_engine.Shared.helpers
 					var tileAtlas = windowSkin;
 					var singleTile = tileAtlas.TextureAtlas[(int)tileNumber];
 					var tilePos = new Vector2(actualX + (w * _currents.TileSize), actualY + (h * _currents.TileSize));
-					_spriteBatch.Draw(singleTile, tilePos, Color.White);
+					_spriteBatch.Draw(singleTile, tilePos, Color.White, 1f);
 
 				}
 			}
@@ -130,20 +155,20 @@ namespace solid_game_engine.Shared.helpers
 
 				if (size.X > maxLineWidth)
 				{
-						spriteBatch.DrawString(font, currentLine, new Vector2(position.X, currentY), color);
+					spriteBatch.DrawString(font, currentLine, new Vector2(position.X, currentY), color);
 
-						currentLine = word;
-						currentY += lineHeight;
+					currentLine = word;
+					currentY += lineHeight;
 				}
 				else
 				{
-						currentLine = testLine;
+					currentLine = testLine;
 				}
 			}
 
 			if (currentLine.Length > 0)
 			{
-					spriteBatch.DrawString(font, currentLine, new Vector2(position.X, currentY), color);
+				spriteBatch.DrawString(font, currentLine, new Vector2(position.X, currentY), color);
 			}
 			spriteBatch.End();
 		}
@@ -155,31 +180,26 @@ namespace solid_game_engine.Shared.helpers
 			string currentLine = string.Empty;
 			var font = _current.CurrentFont;
 			float lineHeight = font.LineSpacing;
-			float currentY = position.Y;  
-			spriteBatch.Begin();
+			float currentY = position.Y;
 			foreach (string word in words)
 			{
-					string testLine = currentLine.Length == 0 ? word : currentLine + " " + word;
-					Vector2 size = font.MeasureString(testLine);
+				string testLine = currentLine.Length == 0 ? word : currentLine + " " + word;
+				Vector2 size = font.MeasureString(testLine);
 
-					if (size.X > maxLineWidth)
-					{
-							spriteBatch.DrawString(font, currentLine, new Vector2(position.X, currentY), color);
-
-							currentLine = word;  
-							currentY += lineHeight;  
-					}
-					else
-					{
-							currentLine = testLine;  
-					}
+				if (size.X > maxLineWidth)
+				{
+					currentLine = word;
+					currentY += lineHeight;
+				}
+				else
+				{
+					currentLine = testLine;
+				}
 			}
 			if (currentLine.Length > 0)
 			{
-					spriteBatch.DrawString(font, currentLine, new Vector2(position.X, currentY), color);
-					currentY += lineHeight;  
+				currentY += lineHeight;
 			}
-			spriteBatch.End();
 
 			return currentY;
 		}

@@ -11,11 +11,31 @@ using solid_game_engine.Shared.Enums;
 
 namespace solid_game_engine.Shared.helpers
 {
-    public static class PlayerHelpers
+  public static class PlayerHelpers
 	{
-		public static bool DirectionCheck(this GameEntity _player, Direction direction, Dictionary<Direction, Map> mapDict, Map playerMap)
+		public static PlayerIndex GetMaxPlayerIndex(this List<PlayerEntity> players)
+		{
+			var maxIndex = players?.Max(p => p.Input.PlayerIndex);
+
+			return maxIndex ?? PlayerIndex.One;
+		}
+		public static PlayerEntity FindNearestPlayer(this List<PlayerEntity> players, float X, float Y)
+		{
+			var targetLocation = new Vector2(X, Y);
+			var nearestPlayer = players.OrderBy(p => Vector2.Distance(new Vector2(p.X, p.Y), targetLocation)).FirstOrDefault();
+			return nearestPlayer;
+		}
+		public static PlayerEntity FindNearestPlayer(this List<PlayerEntity> players, GameEntity entity)
+		{
+			var targetLocation = new Vector2(entity.X, entity.Y);
+			var nearestPlayer = players.OrderBy(p => Vector2.Distance(new Vector2(p.X, p.Y), targetLocation)).FirstOrDefault();
+			return nearestPlayer;
+		}
+
+		public static bool DirectionCheck(this PlayerEntity _player, Direction direction, Map playerMap)
 		{
 			var canGoUp = true;
+			var mapDict = _player.MapDirections;
 			if (direction == Direction.UP)
 			{
 				var upMap = mapDict[Direction.UP];
@@ -87,7 +107,7 @@ namespace solid_game_engine.Shared.helpers
 			camera.LookAt(new Vector2(Player.X, Player.Y));
 		}
 		
-		public static void GetCameraInput(this PlayerEntity Player, GameTime gameTime, float speed, Dictionary<Direction, Map> mapDict, Level CurrentLevel, OrthographicCamera camera)
+		public static void GetCameraInput(this PlayerEntity Player, GameTime gameTime, float speed, Level CurrentLevel, OrthographicCamera camera)
 		{
 			
 			var playerCanMove = Player.CanMove;
@@ -101,11 +121,12 @@ namespace solid_game_engine.Shared.helpers
 
 	    // --------------- Player Checks
 			var _player = Player;
+			var mapDict = CurrentLevel.MapDirections;
 			// -------- Up
 			bool canGoUp;
 			if (mapDict.ContainsKey(Direction.UP))
 			{
-				canGoUp = _player.DirectionCheck(Direction.UP, mapDict, currentMap);
+				canGoUp = _player.DirectionCheck(Direction.UP, currentMap);
 			} else
 			{
 				canGoUp = _player.Y > currentMap.Origin.Y;
@@ -114,7 +135,7 @@ namespace solid_game_engine.Shared.helpers
 			bool canGoDown;
 			if (mapDict.ContainsKey(Direction.DOWN))
 			{
-				canGoDown = _player.DirectionCheck(Direction.DOWN, mapDict, currentMap);
+				canGoDown = _player.DirectionCheck(Direction.DOWN, currentMap);
 			} else
 			{
 				canGoDown = _player.Y < currentMap.Origin.Y + currentMap.Height && shouldPanDown;
@@ -123,7 +144,7 @@ namespace solid_game_engine.Shared.helpers
 			bool canGoLeft;
 			if (mapDict.ContainsKey(Direction.LEFT))
 			{
-				canGoLeft = _player.DirectionCheck(Direction.LEFT, mapDict, currentMap);
+				canGoLeft = _player.DirectionCheck(Direction.LEFT, currentMap);
 			} else
 			{
 				canGoLeft = _player.X > currentMap.Origin.X;
@@ -132,14 +153,14 @@ namespace solid_game_engine.Shared.helpers
 			bool canGoRight;
 			if (mapDict.ContainsKey(Direction.RIGHT))
 			{
-				canGoRight = _player.DirectionCheck(Direction.RIGHT, mapDict, currentMap);
+				canGoRight = _player.DirectionCheck(Direction.RIGHT, currentMap);
 			} else {
 				canGoRight = _player.X < currentMap.Origin.X + currentMap.Width;
 			}
-			var upPressed = _player.Input.isPressed(Controls.UP);
-			var downPressed = _player.Input.isPressed(Controls.DOWN);
-			var leftPressed = _player.Input.isPressed(Controls.LEFT);
-			var rightPressed = _player.Input.isPressed(Controls.RIGHT);
+			var upPressed = _player.Input.IsPressed(Controls.UP);
+			var downPressed = _player.Input.IsPressed(Controls.DOWN);
+			var leftPressed = _player.Input.IsPressed(Controls.LEFT);
+			var rightPressed = _player.Input.IsPressed(Controls.RIGHT);
 
 			var totalUp = upPressed && !downPressed && !rightPressed && !leftPressed;
 			var totalDown = downPressed && !upPressed && !rightPressed && !leftPressed;
@@ -169,15 +190,16 @@ namespace solid_game_engine.Shared.helpers
 				camera.Move(cameraDirection * speed * gameTime.GetElapsedSeconds());
 			}
 		}
-		public static void GetInput(this PlayerEntity _player, GameTime gameTime, Level CurrentLevel, Dictionary<Direction, Map> mapDict, bool lockMovement = false)
+		public static void GetInput(this PlayerEntity _player, GameTime gameTime, Map CurrentMap, bool lockMovement = false)
 		{
 			var kState = Keyboard.GetState();
-			var currentMap = CurrentLevel.currentMaps.FindPlayersMap(_player);
+			var currentMap = CurrentMap;
+			var mapDict = _player.MapDirections;
 			// --------- Check Map Origin Can Move
 			bool canGoUp;
 			if (mapDict.ContainsKey(Direction.UP))
 			{
-				canGoUp = _player.DirectionCheck(Direction.UP, mapDict, currentMap);
+				canGoUp = _player.DirectionCheck(Direction.UP, currentMap);
 			} else
 			{
 				canGoUp = _player.Y > currentMap.Origin.Y;
@@ -186,7 +208,7 @@ namespace solid_game_engine.Shared.helpers
 			bool canGoDown;
 			if (mapDict.ContainsKey(Direction.DOWN))
 			{
-				canGoDown = _player.DirectionCheck(Direction.DOWN, mapDict, currentMap);
+				canGoDown = _player.DirectionCheck(Direction.DOWN, currentMap);
 			} else
 			{
 				canGoDown = _player.Y < currentMap.Origin.Y + currentMap.Height;
@@ -195,7 +217,7 @@ namespace solid_game_engine.Shared.helpers
 			bool canGoLeft;
 			if (mapDict.ContainsKey(Direction.LEFT))
 			{
-				canGoLeft = _player.DirectionCheck(Direction.LEFT, mapDict, currentMap);
+				canGoLeft = _player.DirectionCheck(Direction.LEFT, currentMap);
 			} else
 			{
 				canGoLeft = _player.X > currentMap.Origin.X;
@@ -204,14 +226,14 @@ namespace solid_game_engine.Shared.helpers
 			bool canGoRight;
 			if (mapDict.ContainsKey(Direction.RIGHT))
 			{
-				canGoRight = _player.DirectionCheck(Direction.RIGHT, mapDict, currentMap);
+				canGoRight = _player.DirectionCheck(Direction.RIGHT, currentMap);
 			} else {
 				canGoRight = _player.X < currentMap.Origin.X + currentMap.Width;
 			}
-			var upPressed = _player.Input.isPressed(Controls.UP);
-			var downPressed = _player.Input.isPressed(Controls.DOWN);
-			var leftPressed = _player.Input.isPressed(Controls.LEFT);
-			var rightPressed = _player.Input.isPressed(Controls.RIGHT);
+			var upPressed = _player.Input.IsPressed(Controls.UP);
+			var downPressed = _player.Input.IsPressed(Controls.DOWN);
+			var leftPressed = _player.Input.IsPressed(Controls.LEFT);
+			var rightPressed = _player.Input.IsPressed(Controls.RIGHT);
 			
 			var totalUp = upPressed && !downPressed && !rightPressed && !leftPressed;
 			var totalDown = downPressed && !upPressed && !rightPressed && !leftPressed;

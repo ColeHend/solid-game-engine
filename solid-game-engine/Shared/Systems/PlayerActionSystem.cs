@@ -16,8 +16,8 @@ namespace solid_game_engine.Shared.Systems
     public class PlayerActionSystem
     {
 			private SceneManager _sceneManager { get; }
-			private Map CurrentMap { get; set; }
-			private PlayerEntity Player { get {
+			private Dictionary<PlayerEntity, Map> CurrentPlayerMap { get; set; } = new Dictionary<PlayerEntity, Map>();
+			private List<PlayerEntity> Players { get {
 				return _sceneManager.Game.Currents.Player;
 			}}
 			public PlayerActionSystem(SceneManager sceneManager)
@@ -25,8 +25,13 @@ namespace solid_game_engine.Shared.Systems
 				_sceneManager = sceneManager;
 			}
 			// --------- Private Functions -------------------------
-			private List<NpcEntity> GetEntitiesNearPlayer()
+			private List<NpcEntity> GetEntitiesNearPlayer(PlayerEntity Player)
 			{
+				var CurrentMap = CurrentPlayerMap[Player];
+				if (CurrentMap == null)
+				{
+					return new List<NpcEntity>();
+				}
 				var tileSize = CurrentMap.TileInfo[0][0].Size + 16;
 				Vector2 playerLocation = new Vector2(Player.X, Player.Y);
 				var checkEntityX = (GameEntity entity) => Helpers.InRange(entity.X, playerLocation.X-tileSize, playerLocation.X+tileSize);
@@ -38,26 +43,30 @@ namespace solid_game_engine.Shared.Systems
 
 
 			//  ----------------------------------------------------
-			public void SetCurrentMap(Map currentMap)
+			public void SetCurrentPlayerMap(PlayerEntity player, Map map)
 			{
-				CurrentMap = currentMap;
+				CurrentPlayerMap[player] = map;
 			}
       public void Update(GameTime gameTime)
 			{
-				var nearPlayer = GetEntitiesNearPlayer();
-				if (nearPlayer.Count() > 0)
+				foreach (var Player in Players)
 				{
-					if (Player.Input.isPressed(Controls.A))
+					var nearPlayer = GetEntitiesNearPlayer(Player);
+					var CurrentMap = CurrentPlayerMap[Player];
+					if (nearPlayer.Count() > 0)
 					{
-						foreach (var entity in nearPlayer)
+						if (Player.Input.IsSinglePressed(Controls.A))
 						{
-							var entityIndex = CurrentMap.GameEntities.FindIndex(e=>e.X == entity.X && e.Y == entity.Y);
-							var isPlayer = entity._IsPlayer;
-							if (entityIndex != -1 && !isPlayer)
+							foreach (var entity in nearPlayer)
 							{
-								if (CurrentMap.GameEntities[entityIndex].ActionIndex == -1)
+								var entityIndex = CurrentMap.GameEntities.FindIndex(e=>e.X == entity.X && e.Y == entity.Y);
+								var isPlayer = entity._IsPlayer;
+								if (entityIndex != -1 && !isPlayer)
 								{
-									CurrentMap.GameEntities[entityIndex].PlayerActionTrigger(Player);
+									if (CurrentMap.GameEntities[entityIndex].ActionIndex == -1)
+									{
+										CurrentMap.GameEntities[entityIndex].PlayerActionTrigger(Player);
+									}
 								}
 							}
 						}

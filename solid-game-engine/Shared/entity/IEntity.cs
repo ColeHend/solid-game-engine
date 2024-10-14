@@ -42,7 +42,7 @@ public class GameEntity : IEntity
 		private SpriteSheet _spriteSheet { get; set; }
 
 		private RectangleF _position { get; set; }
-		private bool _isMoving { get; set; } = false;
+		public bool _isMoving { get; set; } = false;
 		private string _lastAnimation { get; set; } = "face-down";
 		
 		private List<Direction> MovementQue { get; set; } = new List<Direction>();
@@ -57,7 +57,7 @@ public class GameEntity : IEntity
 			_position = new RectangleF(X, Y, Width, Height);
 			_facing = Direction.DOWN;
 			_IsPlayer = isPlayer;
-			Bounds = new RectangleF(X, Y, Width, Height);
+			Bounds = new RectangleF(X+2, Y, 21, 32);
 			_pushable = pushable;
 			CanMove.Add(Direction.DOWN, true);
 			CanMove.Add(Direction.UP, true);
@@ -194,8 +194,7 @@ public class GameEntity : IEntity
 		{
 			if (_IsPlayer)
 			{
-				var kState = Keyboard.GetState();
-				_isMoving = kState.IsKeyDown(Keys.Left) || kState.IsKeyDown(Keys.Right) || kState.IsKeyDown(Keys.Up) || kState.IsKeyDown(Keys.Down);
+				
 			} else 
 			{
 				_isMoving = MovementQue.Count > 0;

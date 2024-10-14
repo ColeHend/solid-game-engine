@@ -23,7 +23,7 @@ namespace solid_game_engine.Shared.scenes
 		private SceneManager _sceneManager { get; }
 		private PlayerActionSystem playerActionSystem{ get; }
 
-		public PlayerEntity player { get {
+		public List<PlayerEntity> player { get {
 			return _sceneManager.Game.Currents.Player;
 		} }
 		public Scene_Game(SceneManager sceneManager)
@@ -53,34 +53,44 @@ namespace solid_game_engine.Shared.scenes
 		public void LoadContent(ContentManager contentManager)
 		{
 			Vector2 playerOrigin = new Vector2(12 * 32, 8 * 32);
-			var player = new PlayerEntity(_sceneManager.Game.Currents, (int)playerOrigin.X, (int)playerOrigin.Y);
-			player._speed = 100f;
-			_sceneManager.Game.Currents.Player = player;
-			CurrentLevel.LoadContent(contentManager);
-			CurrentLevel.MapChangeAction = ()=>{
-				playerActionSystem.SetCurrentMap(CurrentLevel.currentMaps.FindPlayersMap(player));
+			var player1 = new PlayerEntity(_sceneManager.Game.Currents, (int)playerOrigin.X, (int)playerOrigin.Y, PlayerIndex.One);
+			player1._speed = 100f;
+			var player2 = new PlayerEntity(_sceneManager.Game.Currents, (int)playerOrigin.X + 2, (int)playerOrigin.Y + 2, PlayerIndex.Two);
+			player2._speed = 100f;
+			_sceneManager.Game.Currents.Player = new List<PlayerEntity>(){
+				player1,
+				player2
 			};
-			playerActionSystem.SetCurrentMap(CurrentLevel.currentMaps.FindPlayersMap(player));
+			CurrentLevel.LoadContent(contentManager);
+			CurrentLevel.MapChangeAction = (PlayerEntity player)=>{
+				player.MapDirections = CurrentLevel.currentMaps.GetMapDirections(_sceneManager.Game, player.Input.PlayerIndex);
+				playerActionSystem.SetCurrentPlayerMap(player, CurrentLevel.currentMaps.FindPlayersMap(player));
+				foreach (var map in CurrentLevel.currentMaps)
+				{
+					map.SetCollisionComponent();
+					map._collisionComponent.Remove(player);
+					map._collisionComponent.Insert(player); 
+				}
+				
+				return "Map Changed";
+			};
+			player.ForEach(playa =>{
+				playa.MapDirections = CurrentLevel.currentMaps.GetMapDirections(_sceneManager.Game, playa.Input.PlayerIndex);
+				playerActionSystem.SetCurrentPlayerMap(playa, CurrentLevel.currentMaps.FindPlayersMap(playa));
+				playa.LoadContent(contentManager);
+			});
 		}
 
 		public void Draw(SpriteBatch spriteBatch)
 		{
 			transformMatrix = camera.GetViewMatrix();
-		
 			// --- Draw Level ---
 			CurrentLevel.Draw(spriteBatch);
-			// - Draw Player --
-			player.matrix = transformMatrix;
-			player.Draw(spriteBatch);
 			playerActionSystem.Draw(spriteBatch);
 		}
 
 		public void Update(GameTime gameTime)
 		{
-			player.Update(gameTime);
-			player.GetInput(gameTime, CurrentLevel, CurrentLevel.MapDirections, player.LockMovement);
-			player.GetFollowCamera(camera);
-
 			// --- Update Level ---
 			CurrentLevel.Update(gameTime);
 			playerActionSystem.Update(gameTime);

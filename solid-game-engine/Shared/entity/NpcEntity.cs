@@ -19,12 +19,15 @@ namespace solid_game_engine.Shared.entity
 		private int RunningActionIndex { get; set; } = -1;
 		public int ActionIndex { get { return RunningActionIndex; } }
 		public NpcTriggerTypes TriggerType { get; set; }
-		public NpcEntity(Texture2D texture, int X, int Y, int Width, int Height) : base(texture, X, Y, Width, Height, false, false)
+		private SceneManager _sceneManager { get; set; }
+		public NpcEntity(SceneManager sceneManager, Texture2D texture, int X, int Y, int Width, int Height) : base(texture, X, Y, Width, Height, false, false)
 		{
+			_sceneManager = sceneManager;
 			Actions = new List<INPCActions>();
 		}
-		public NpcEntity(Texture2D texture, int X, int Y, int Width, int Height, List<INPCActions> actions) : base(texture, X, Y, Width, Height, false, false)
+		public NpcEntity(SceneManager sceneManager, Texture2D texture, int X, int Y, int Width, int Height, List<INPCActions> actions) : base(texture, X, Y, Width, Height, false, false)
 		{
+			_sceneManager = sceneManager;
 			Actions = actions;
 		}
 		private Action FreePlayer { get; set; }
@@ -40,9 +43,9 @@ namespace solid_game_engine.Shared.entity
 					};
 					Actions[i].SetInput(player.Input);
 				}
-				player.LockMovement = true;
+				_sceneManager.Game.Currents.Player.ForEach(p=>p.LockMovement = true);
 				FreePlayer = ()=>{
-					player.LockMovement = false;
+					_sceneManager.Game.Currents.Player.ForEach(p=>p.LockMovement = false);
 				};
 				RunningActionIndex = 0;
 			}
@@ -115,6 +118,10 @@ namespace solid_game_engine.Shared.entity
 				RunningActionIndex = -1;
 				FreePlayer();
 			}
+		}
+
+		public void DrawActions(SpriteBatch spriteBatch)
+		{
 			if (Actions.Count > 0 && RunningActionIndex < Actions.Count && RunningActionIndex >= 0)
 			{
 				Actions[RunningActionIndex].Draw(spriteBatch);

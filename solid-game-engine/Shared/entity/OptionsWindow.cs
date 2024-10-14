@@ -53,7 +53,7 @@ namespace solid_game_engine.Shared.entity
 				Width = width;
 				Height = height;
 				SelectedIndex = 0;
-				Input = new InputWrap(playerIndex ?? PlayerIndex.One, true);
+				Input = new InputWrap(playerIndex ?? PlayerIndex.One, _sceneManager.Game.Currents.Player.GetMaxPlayerIndex());
 			}
       
 			private Color optionColor(bool isSelected) 
@@ -97,8 +97,8 @@ namespace solid_game_engine.Shared.entity
 
 			public void Update(GameTime gameTime)
 			{
-				Input.Update();
-				if (Input.isSinglePressed(Controls.UP))
+				Input.Update(gameTime);
+				if (Input.IsSinglePressed(Controls.UP))
 				{
 					if (SelectedIndex == 0)
 					{
@@ -107,7 +107,7 @@ namespace solid_game_engine.Shared.entity
 					{
 						SelectedIndex -= 1;
 					}
-				} else if (Input.isSinglePressed(Controls.DOWN))
+				} else if (Input.IsSinglePressed(Controls.DOWN))
 				{
 					if (SelectedIndex == Options.Count - 1)
 					{
@@ -118,7 +118,7 @@ namespace solid_game_engine.Shared.entity
 					}
 				}
 
-				if (Input.isSinglePressed(Controls.A) || Input.isSinglePressed(Controls.START))
+				if (Input.IsSinglePressed(Controls.A) || Input.IsSinglePressed(Controls.START))
 				{
 					if (Options[SelectedIndex].Action != null)
 					{

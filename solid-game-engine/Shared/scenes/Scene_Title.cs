@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -22,9 +23,9 @@ namespace solid_game_engine.Shared.scenes
 	public class Scene_Title : IScene
 	{
 		public string Name { get; } = "Scene_Title";
-		private SceneManager _sceneManager { get; }
+		private ISceneManager _sceneManager { get; }
 		private StartOptions SelectedOption { get; set; }
-		private InputWrap inputState { get; set; } = new InputWrap(PlayerIndex.One, PlayerIndex.One);
+		private InputWrap inputState { get; set; }
 		private Currents Currents { get {
 			return _sceneManager.Game.Currents;
 		}}
@@ -32,7 +33,7 @@ namespace solid_game_engine.Shared.scenes
 			return _sceneManager.Game.Window;
 		}}
 		private OptionsWindow InitialOptions { get; set; }
-		public Scene_Title(SceneManager sceneManager)
+		public Scene_Title(ISceneManager sceneManager)
 		{
 			_sceneManager = sceneManager;
 			var windowHeight = Window.ClientBounds.Height;
@@ -75,12 +76,11 @@ namespace solid_game_engine.Shared.scenes
 		// -----------------------------------
 		public void Initialize(GraphicsDeviceManager graphics)
 		{
-			
+			inputState = new InputWrap(PlayerIndex.One, PlayerIndex.One);
 		}
 
 		public void LoadContent(ContentManager contentManager)
 		{
-			
 		}
 		public void Draw(SpriteBatch spriteBatch)
 		{

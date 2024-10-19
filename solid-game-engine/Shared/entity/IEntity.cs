@@ -26,8 +26,20 @@ public enum Direction
 }
 	public interface IEntity : ICollisionActor
 	{
+		float X { get; set; }
+		float Y { get; set; }
+		AnimatedSprite _sprite { get; set; }
+		Direction _facing { get; set; }
+		float _speed { get; set; }
+		IShapeF Bounds { get; set;}
+		SpriteSheet _spriteSheet { get; set; }
+		bool _isMoving { get; set; }
 		bool _IsPlayer { get; }
 		bool IsTile { get;}
+		Matrix matrix { get; set;}
+		Dictionary<Direction, bool> CanMove { get; set; }
+		void SetSpritesheet(Texture2D texture, int Width, int Height);
+		void Move(GameTime gameTime, Controls dir);
 		public void Update(GameTime gameTime);
 		public void Draw(SpriteBatch spriteBatch);
 	}
@@ -37,32 +49,37 @@ public class GameEntity : IEntity
 		public AnimatedSprite _sprite { get; set; }
 		public Direction _facing { get; set; }
 		public float _speed { get; set; } = 100f;
-		public IShapeF Bounds { get; }
+		public IShapeF Bounds { get; set;}
 		public bool IsTile { get; } = false;
-		private SpriteSheet _spriteSheet { get; set; }
-
-		private RectangleF _position { get; set; }
 		public bool _isMoving { get; set; } = false;
+		public bool _IsPlayer { get; set; }
+		public SpriteSheet _spriteSheet { get; set; }
+
 		private string _lastAnimation { get; set; } = "face-down";
+		private RectangleF _position { get; set; }
 		
 		private List<Direction> MovementQue { get; set; } = new List<Direction>();
-		public bool _IsPlayer { get; set; }
 		private bool _pushable { get; set; }
 		public Dictionary<Direction, bool> CanMove { get; set; } = new Dictionary<Direction, bool>();
 
-		public GameEntity(Texture2D texture, int X, int Y, int Width, int Height, bool isPlayer = false, bool pushable = false)
+		public GameEntity(int Width, int Height)
 		{
-			_spriteSheet = texture.GetSpriteSheet(Width, Height).AddWalking();
-			_sprite = new AnimatedSprite(_spriteSheet, "face-down");
+			
 			_position = new RectangleF(X, Y, Width, Height);
 			_facing = Direction.DOWN;
-			_IsPlayer = isPlayer;
-			Bounds = new RectangleF(X+2, Y, 21, 32);
-			_pushable = pushable;
+			// _IsPlayer = isPlayer;
+			
+			// _pushable = pushable;
 			CanMove.Add(Direction.DOWN, true);
 			CanMove.Add(Direction.UP, true);
 			CanMove.Add(Direction.LEFT, true);
 			CanMove.Add(Direction.RIGHT, true);
+		}
+		public void SetSpritesheet(Texture2D texture, int Width, int Height)
+		{
+			_spriteSheet = texture.GetSpriteSheet(Width, Height).AddWalking();
+			_sprite = new AnimatedSprite(_spriteSheet, "face-down");
+			Bounds = new RectangleF(X+2, Y, 21, 32);
 		}
 
 		public float X

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -20,23 +22,36 @@ public class Game1 : Game
 	private SpriteBatch _spriteBatch;
 	// --- Public Variables ---
 	public Currents Currents { get; set; } = new Currents();
-	public SceneManager sceneManager{ get; set; }
-	public Game1()
+	public ISceneManager sceneManager { get; set; }
+	private IServiceProvider _serviceProvider;
+	public Game1() : base()
 	{
-			_graphics = new GraphicsDeviceManager(this);
-			Content.RootDirectory = "Content";
-			IsMouseVisible = true;
+		var services = ConfigureServices();
+		_serviceProvider = services.BuildServiceProvider();
+		_graphics = new GraphicsDeviceManager(this);
+		Content.RootDirectory = "Content";
+		IsMouseVisible = true;
+		sceneManager = _serviceProvider.GetRequiredService<ISceneManager>();
 			
-			sceneManager = new SceneManager(this);
-			
+	}
+
+	private IServiceCollection ConfigureServices()
+	{
+		var services = new ServiceCollection();
+
+		services.AddSingleton<Game1>(this);
+		services.AddSingleton<ISceneManager, SceneManager>();
+		services.AddTransient<IMap, Map>();
+		services.AddTransient<INpcEntity, NpcEntity>();
+		services.AddTransient<IPlayerEntity, PlayerEntity>();
+		 
+
+		return services;
 	}
 
 	protected override void Initialize()
 	{
 		sceneManager.Initialize(_graphics);
-
-		// --- Initialize Level ---
-		
 		base.Initialize();
 	}
 
@@ -47,9 +62,34 @@ public class Game1 : Game
 			Currents.CurrentWindowSkin = Content.Load<Texture2D>("graphics\\blackWindowSkin");
 			Currents.CurrentFont = Content.Load<SpriteFont>("fonts\\GameFont");
 			Currents.CurrentPlayerskin = Content.Load<Texture2D>("graphics\\player");
+			this.LoadPlayers();
 			// ----------
 			sceneManager.LoadContent(Content);
 	}
+
+	private void LoadPlayers()
+			{
+				Vector2 playerOrigin = new Vector2(12, 8);
+				var player1 = _serviceProvider.GetRequiredService<IPlayerEntity>();
+				player1.SetSpritesheet(Currents.CurrentPlayerskin, 32, 48);
+				player1.SetLocation((int)playerOrigin.X, (int)playerOrigin.Y, Vector2.Zero);
+				player1.SetPlayer(PlayerIndex.One);
+				player1._speed = 100f;
+
+				var player2 = _serviceProvider.GetRequiredService<IPlayerEntity>();
+				player2.SetSpritesheet(Currents.CurrentPlayerskin, 32, 48);
+				player2.SetLocation((int)playerOrigin.X + 2, (int)playerOrigin.Y, Vector2.Zero);
+				player2.SetPlayer(PlayerIndex.Two);
+				player2._speed = 100f;
+				
+
+				var players = new List<IPlayerEntity>(){
+					player1,
+					player2
+				};
+
+				Currents.Player = players;
+			}
 
 	protected override void Update(GameTime gameTime)
 	{

@@ -13,26 +13,26 @@ namespace solid_game_engine.Shared.helpers
 {
   public static class PlayerHelpers
 	{
-		public static PlayerIndex GetMaxPlayerIndex(this List<PlayerEntity> players)
+		public static PlayerIndex GetMaxPlayerIndex(this List<IPlayerEntity> players)
 		{
 			var maxIndex = players?.Max(p => p.Input.PlayerIndex);
 
 			return maxIndex ?? PlayerIndex.One;
 		}
-		public static PlayerEntity FindNearestPlayer(this List<PlayerEntity> players, float X, float Y)
+		public static IPlayerEntity FindNearestPlayer(this List<IPlayerEntity> players, float X, float Y)
 		{
 			var targetLocation = new Vector2(X, Y);
 			var nearestPlayer = players.OrderBy(p => Vector2.Distance(new Vector2(p.X, p.Y), targetLocation)).FirstOrDefault();
 			return nearestPlayer;
 		}
-		public static PlayerEntity FindNearestPlayer(this List<PlayerEntity> players, GameEntity entity)
+		public static IPlayerEntity FindNearestPlayer(this List<IPlayerEntity> players, IEntity entity)
 		{
 			var targetLocation = new Vector2(entity.X, entity.Y);
 			var nearestPlayer = players.OrderBy(p => Vector2.Distance(new Vector2(p.X, p.Y), targetLocation)).FirstOrDefault();
 			return nearestPlayer;
 		}
 
-		public static bool DirectionCheck(this PlayerEntity _player, Direction direction, Map playerMap)
+		public static bool DirectionCheck(this IPlayerEntity _player, Direction direction, IMap playerMap)
 		{
 			var canGoUp = true;
 			var mapDict = _player.MapDirections;
@@ -102,12 +102,12 @@ namespace solid_game_engine.Shared.helpers
 			return true; 
 		}
 		
-		public static void GetFollowCamera(this PlayerEntity Player, OrthographicCamera camera)
+		public static void GetFollowCamera(this IPlayerEntity Player, OrthographicCamera camera)
 		{
 			camera.LookAt(new Vector2(Player.X, Player.Y));
 		}
 		
-		public static void GetCameraInput(this PlayerEntity _player, GameTime gameTime, float speed, Level CurrentLevel, OrthographicCamera camera)
+		public static void GetCameraInput(this IPlayerEntity _player, GameTime gameTime, float speed, Level CurrentLevel, OrthographicCamera camera)
 		{
 			
 			var playerCanMove = _player.CanMove;
@@ -189,7 +189,7 @@ namespace solid_game_engine.Shared.helpers
 				camera.Move(cameraDirection * speed * gameTime.GetElapsedSeconds());
 			}
 		}
-		public static void GetInput(this PlayerEntity _player, GameTime gameTime, Map CurrentMap, bool lockMovement = false)
+		public static void GetInput(this IPlayerEntity _player, GameTime gameTime, IMap CurrentMap, bool lockMovement = false)
 		{
 			var kState = Keyboard.GetState();
 			var currentMap = CurrentMap;

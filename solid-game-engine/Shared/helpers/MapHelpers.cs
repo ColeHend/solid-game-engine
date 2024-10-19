@@ -14,31 +14,31 @@ namespace solid_game_engine.Shared.helpers
 {
     public static class MapHelpers
 	{
-		public static Dictionary<Direction, Map> GetMapDirections(this List<Map> Maps, Game1 _game, PlayerIndex playerIndex = PlayerIndex.One)
+		public static Dictionary<Direction, IMap> GetMapDirections(this List<IMap> Maps, Game1 _game, PlayerIndex playerIndex = PlayerIndex.One)
 		{
-			var mapDict = new Dictionary<Direction, Map>();
+			var mapDict = new Dictionary<Direction, IMap>();
 			var thePlayers = _game.Currents.Player.Where(player => player != null && player.X >= 0 && player.Y >= 0).ToList();
-			Map currentMap = Maps.FindPlayersMap(thePlayers.Where(player => player.Input.PlayerIndex == playerIndex).FirstOrDefault());
+			IMap currentMap = Maps.FindPlayersMap(thePlayers.Where(player => player.Input.PlayerIndex == playerIndex).FirstOrDefault());
 			if (currentMap == null)
 			{
 				return mapDict;
 			}
-			Map? UpMap = Maps.Find(x => x.Origin.X == currentMap.Origin.X && x.Origin.Y == currentMap.Origin.Y - currentMap.Height);
+			IMap? UpMap = Maps.Find(x => x.Origin.X == currentMap.Origin.X && x.Origin.Y == currentMap.Origin.Y - currentMap.Height);
 			if (UpMap != null)
 			{
 				mapDict.Add(Direction.UP, UpMap);
 			}
-			Map? DownMap = Maps.Find(x => x.Origin.X == currentMap.Origin.X && x.Origin.Y == currentMap.Origin.Y + currentMap.Height);
+			IMap? DownMap = Maps.Find(x => x.Origin.X == currentMap.Origin.X && x.Origin.Y == currentMap.Origin.Y + currentMap.Height);
 			if (DownMap != null)
 			{
 				mapDict.Add(Direction.DOWN,DownMap);
 			}
-			Map? LeftMap = Maps.Find(x => x.Origin.X == currentMap.Origin.X - currentMap.Width && x.Origin.Y == currentMap.Origin.Y);
+			IMap? LeftMap = Maps.Find(x => x.Origin.X == currentMap.Origin.X - currentMap.Width && x.Origin.Y == currentMap.Origin.Y);
 			if (LeftMap != null)
 			{
 				mapDict.Add(Direction.LEFT,LeftMap);
 			}
-			Map? RightMap = Maps.Find(x => x.Origin.X == currentMap.Origin.X + currentMap.Width && x.Origin.Y == currentMap.Origin.Y);
+			IMap? RightMap = Maps.Find(x => x.Origin.X == currentMap.Origin.X + currentMap.Width && x.Origin.Y == currentMap.Origin.Y);
 			if (RightMap != null)
 			{
 				mapDict.Add(Direction.RIGHT, RightMap);
@@ -94,9 +94,9 @@ namespace solid_game_engine.Shared.helpers
 		{
 			return tileMap[layer];
 		}
-		public static Map FindPlayersMap(this List<Map> maps, GameEntity _player)
+		public static IMap FindPlayersMap(this List<IMap> maps, IEntity _player)
 		{
-			Map maybeMap = null;
+			IMap maybeMap = null;
 			if (_player == null || _player.X < 0 || _player.Y < 0)
 			{
 				return null;

@@ -14,7 +14,7 @@ public class Currents
 		public Texture2D CurrentWindowSkin { get; set; }
 		public Texture2D CurrentPlayerskin { get; set; }
 		public SpriteFont CurrentFont { get; set; }
-		public List<PlayerEntity> Player { get; set; }
+		public List<IPlayerEntity> Player { get; set; }
 		public int TileSize { get; set; } = 32;
 		public Vector2 ScreenResolution {get; set;} = new Vector2(800, 600);		
 }

@@ -7,8 +7,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoGame.Extended.Collisions;
+using MonoGame.Extended.Graphics;
 using Newtonsoft.Json;
 using solid_game_engine.Shared.Entities;
+using solid_game_engine.Shared.Enums;
 
 namespace solid_game_engine.Shared
 {
@@ -40,6 +42,16 @@ namespace solid_game_engine.Shared
 
 		public bool _IsPlayer { get; } = false;
 		public bool IsTile { get; } = true;
+		public float X { get ; set ; }
+		public float Y { get ; set ; }
+		public AnimatedSprite _sprite { get ; set ; }
+		public Direction _facing { get ; set ; }
+		public float _speed { get ; set ; }
+		IShapeF IEntity.Bounds { get ; set ; }
+		public SpriteSheet _spriteSheet { get ; set ; }
+		public bool _isMoving { get ; set ; }
+		public Matrix matrix { get ; set ; }
+		public Dictionary<Direction, bool> CanMove { get ; set ; }
 
 		public TileCollide(Tile tile, Vector2 Origin)
 		{
@@ -62,6 +74,15 @@ namespace solid_game_engine.Shared
 
 		public void Update(GameTime gameTime)
 		{
+		}
+
+		public void SetSpritesheet(Texture2D texture, int Width, int Height)
+		{
+		}
+
+		public void Move(GameTime gameTime, Controls dir)
+		{
+			
 		}
 	}
 }

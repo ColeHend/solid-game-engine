@@ -13,37 +13,72 @@ using solid_game_engine.Shared.helpers;
 
 namespace solid_game_engine.Shared.Systems
 {
-    public class PlayerActionSystem
+    public class PlayerActionSystem : IPlayerActionSystem
     {
-			private SceneManager _sceneManager { get; }
-			private Dictionary<PlayerEntity, Map> CurrentPlayerMap { get; set; } = new Dictionary<PlayerEntity, Map>();
-			private List<PlayerEntity> Players { get {
+			private ISceneManager _sceneManager { get; }
+			private Dictionary<IPlayerEntity, IMap> CurrentPlayerMap { get; set; } = new Dictionary<IPlayerEntity, IMap>();
+			private List<IPlayerEntity> Players { get {
 				return _sceneManager.Game.Currents.Player;
 			}}
-			public PlayerActionSystem(SceneManager sceneManager)
+			public PlayerActionSystem(ISceneManager sceneManager)
 			{
 				_sceneManager = sceneManager;
 			}
 			// --------- Private Functions -------------------------
-			private List<NpcEntity> GetEntitiesNearPlayer(PlayerEntity Player)
+			private List<NpcEntity> GetEntitiesNearPlayer(IPlayerEntity Player)
 			{
-				var CurrentMap = CurrentPlayerMap[Player];
-				if (CurrentMap == null)
+				if (CurrentPlayerMap.ContainsKey(Player) == false || CurrentPlayerMap[Player] == null)
 				{
-					return new List<NpcEntity>();
+					var CurrentLevel = _sceneManager.CurrentLevel;
+					Player.MapDirections = CurrentLevel.currentMaps.GetMapDirections(_sceneManager.Game, Player.Input.PlayerIndex);
+					var theMap = CurrentLevel.currentMaps.FindPlayersMap(Player);
+					if (theMap.TileInfo.Count > 0)
+					{
+						SetCurrentPlayerMap(Player, theMap);
+					}
+				} else
+				{
+					var CurrentMap = CurrentPlayerMap[Player];
+					if (CurrentMap != null && CurrentMap.TileInfo.Count > 0)
+					{
+						var tileSize = CurrentMap.TileInfo[0][0].Size;
+						Vector2 playerLocation = new Vector2(Player.X, Player.Y);
+						var checkEntityX = (IEntity entity) => Helpers.InRange(entity.X, playerLocation.X-tileSize, playerLocation.X+tileSize);
+						var checkEntityY = (IEntity entity) => Helpers.InRange(entity.Y, playerLocation.Y-tileSize, playerLocation.Y+ tileSize + 4);
+						var nearby = CurrentMap.GameEntities.Where(gameEntity=> checkEntityX(gameEntity) && checkEntityY(gameEntity)).ToList();
+						List<NpcEntity> npcEntities = nearby.Select(g => (NpcEntity)g).ToList();
+						return npcEntities.Where(npc=> {
+							var npcHasAction = npc.TriggerType == NpcTriggerTypes.Action;
+							var playerX = Player.X;
+							var playerY = Player.Y;
+							var npcX = npc.X;
+							var npcY = npc.Y;
+							var isFacing = false;
+							switch (Player._facing)
+							{
+								case Direction.UP:
+									isFacing = playerY > npcY;
+									break;
+								case Direction.DOWN:
+									isFacing = playerY < npcY;
+									break;
+								case Direction.LEFT:
+									isFacing = playerX > npcX;
+									break;
+								case Direction.RIGHT:
+									isFacing = playerX < npcX;
+									break;
+							}
+							return npcHasAction && isFacing;
+						}).ToList();
+					}
 				}
-				var tileSize = CurrentMap.TileInfo[0][0].Size + 16;
-				Vector2 playerLocation = new Vector2(Player.X, Player.Y);
-				var checkEntityX = (GameEntity entity) => Helpers.InRange(entity.X, playerLocation.X-tileSize, playerLocation.X+tileSize);
-				var checkEntityY = (GameEntity entity) => Helpers.InRange(entity.Y, playerLocation.Y-tileSize, playerLocation.Y+tileSize);
-				var nearby = CurrentMap.GameEntities.Where(gameEntity=> checkEntityX(gameEntity) && checkEntityY(gameEntity)).ToList();
-				List<NpcEntity> npcEntities = nearby.Select(g => (NpcEntity)g).ToList();
-				return npcEntities.Where(npc=> npc.TriggerType == NpcTriggerTypes.Action).ToList();
+				return new List<NpcEntity>();
 			}
 
 
 			//  ----------------------------------------------------
-			public void SetCurrentPlayerMap(PlayerEntity player, Map map)
+			public void SetCurrentPlayerMap(IPlayerEntity player, IMap map)
 			{
 				CurrentPlayerMap[player] = map;
 			}
@@ -63,9 +98,9 @@ namespace solid_game_engine.Shared.Systems
 								var isPlayer = entity._IsPlayer;
 								if (entityIndex != -1 && !isPlayer)
 								{
-									if (CurrentMap.GameEntities[entityIndex].ActionIndex == -1)
+									if (entity.ActionIndex == -1)
 									{
-										CurrentMap.GameEntities[entityIndex].PlayerActionTrigger(Player);
+										entity.PlayerActionTrigger(Player);
 									}
 								}
 							}

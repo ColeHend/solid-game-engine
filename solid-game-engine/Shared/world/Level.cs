@@ -14,22 +14,38 @@ using solid_game_engine.Shared.helpers;
 using solid_game_engine.Shared.scenes;
 
 namespace solid_game_engine.Shared.Entities;
-
-public class Level 
+public interface ILevel
 {
-	private List<Map> Maps { get; set; }
-	public List<Map> currentMaps { get; set; } = new List<Map>();
+	List<IMap> currentMaps { get; set; }
+	Scene_Game _sceneGame { get; }
+	Func<IPlayerEntity, string> MapChangeAction { get; set; }
+	Func<Dictionary<Direction, IMap>, int, int, Tile> GetTile { get; set; }
+	void Initialize(GraphicsDeviceManager _graphicsDeviceManager);
+	void LoadContent(ContentManager contentManager);
+	void Update(GameTime gameTime);
+	void Draw(SpriteBatch _spriteBatch);
+}
+public class Level : ILevel
+{
+	private List<IMap> Maps { get; set; }
+	public List<IMap> currentMaps { get; set; } = new List<IMap>();
 	private readonly Game1 _game;
 
-	public Func<Dictionary<Direction, Map>, int, int, Tile> GetTile { get; set; }
+	public Func<Dictionary<Direction, IMap>, int, int, Tile> GetTile { get; set; }
 	public Func<List<Tile>> GetPlayerTile { get; set; }
 	public Scene_Game _sceneGame { get; }
-	public Func<PlayerEntity, string> MapChangeAction { get; set; }
-	public Level(Scene_Game sceneGame, SceneManager sceneManager, List<Map> maps)
+	public Func<IPlayerEntity, string> MapChangeAction { get; set; }
+	private ISceneManager _sceneManager { get; }
+	public Level(Scene_Game sceneGame, ISceneManager sceneManager, List<IMap> maps)
 	{
 		Maps = maps;
 		_sceneGame = sceneGame;
-		_game = sceneManager.Game;
+		_sceneManager = sceneManager;
+		_game = _sceneManager.Game;
+	}
+	public Level(ISceneManager sceneManager)
+	{
+		_sceneManager = sceneManager;
 	}
 
 	public void Initialize(GraphicsDeviceManager _graphicsDeviceManager)
@@ -50,7 +66,7 @@ public class Level
 		{
 			Maps[i].LoadContent(contentManager);
 		}
-		GetTile = (Dictionary<Direction, Map> Dictionary, int x, int y) => {
+		GetTile = (Dictionary<Direction, IMap> Dictionary, int x, int y) => {
 			return Dictionary[Direction.NONE].TileInfo[y][x];
 		};
 		GetPlayerTile = () => {
@@ -67,12 +83,16 @@ public class Level
 	{
 		foreach (var player in _game.Currents.Player)
 		{
-			if (player.MapDirections != null && player.MapDirections.ContainsKey(Direction.NONE))
+			if (player.MapDirections == null)
+			{
+				player.MapDirections = Maps.GetMapDirections(_game, player.Input.PlayerIndex);
+			}
+			if (player.MapDirections.ContainsKey(Direction.NONE))
 			{
 				var currentMap = player.MapDirections[Direction.NONE];
 				var onCurrentX = player.X.InRange(currentMap.Origin.X, currentMap.Origin.X + currentMap.Width);
 				var onCurrentY = player.Y.InRange(currentMap.Origin.Y, currentMap.Origin.Y + currentMap.Height);
-				if (!onCurrentX || !onCurrentY)
+				if (!onCurrentX || !onCurrentY || currentMaps.Count == 0)
 				{
 					player.MapDirections = Maps.GetMapDirections(_game, player.Input.PlayerIndex);
 					int currentMapLength = currentMaps.Count;
@@ -83,7 +103,7 @@ public class Level
 						MapChangeAction(player);
 					}
 				}
-			}
+			} 
 		}
 
 		foreach (var map in currentMaps)

@@ -14,12 +14,12 @@ namespace solid_game_engine.Shared.entity.NPCActions
 {
 	public class MessageBox : INPCActions
 	{
-		public MessageBox(SceneManager sceneManager)
+		public MessageBox(ISceneManager sceneManager)
 		{
-			currents = sceneManager.Game.Currents;
 			SceneManager = sceneManager;
+			currents = SceneManager.Game.Currents;
 		}
-		private SceneManager SceneManager { get; set;}
+		private ISceneManager SceneManager { get; set;}
 		public string Done { get; set; } = null;
 		private Currents currents { get; set;}
 		public string Text { get; set; }

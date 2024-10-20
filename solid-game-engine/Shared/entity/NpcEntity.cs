@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoGame.Extended.Collisions;
 using MonoGame.Extended.Graphics;
+using Newtonsoft.Json;
 using solid_game_engine.Shared.Entities;
 using solid_game_engine.Shared.entity.NPCActions;
 using solid_game_engine.Shared.Enums;
@@ -18,11 +19,14 @@ namespace solid_game_engine.Shared.entity
 	public interface INpcEntity : IEntity
 	{
 		int ActionIndex { get; }
+		NpcMovement MovementType { get; set; }
 		NpcTriggerTypes TriggerType { get; set; }
+		bool Pushable { get; set; }
 		void PlayerActionTrigger(IPlayerEntity player);
 		void DrawActions(SpriteBatch spriteBatch);
 		void SetLocation(int x, int y, Vector2 origin);
 		void AddAction(INPCActions action);
+		void SetMoveMap(TileMap tileMap, TileSet tileSet);
 	}
 	public class NpcEntity : INpcEntity
 	{
@@ -35,6 +39,11 @@ namespace solid_game_engine.Shared.entity
 		public bool _isMoving { get; set; }
 		public bool _IsPlayer { get; } = false;
 		public bool IsTile { get; } = false;
+		public NpcMovement MovementType { get; set; }
+		public Matrix matrix { get; set; }
+		public SpriteSheet _spriteSheet { get; set; }
+		public Dictionary<Direction, bool> CanMove { get; set; } = new Dictionary<Direction, bool>();
+		public bool Pushable { get; set; } = true;
 		public float X
 		{
 			get { return Bounds.Position.X; }
@@ -56,17 +65,20 @@ namespace solid_game_engine.Shared.entity
 		private int RunningActionIndex { get; set; } = -1;
 		private ISceneManager _sceneManager { get; set; }
 		private Action FreePlayer { get; set; }
-		public Matrix matrix { get; set; }
-		public SpriteSheet _spriteSheet { get; set; }
-		public Dictionary<Direction, bool> CanMove { get; set; }
 		private string _lastAnimation { get; set; } = "face-down";
 		private RectangleF _position { get; set; }
 		private List<Direction> MovementQue { get; set; } = new List<Direction>();
-		public NpcEntity(ISceneManager sceneManager) 
+		private INpcMoveHandler _moveHandler { get; set; }
+		private Vector2 _origin { get; set; }
+		public NpcEntity(ISceneManager sceneManager, INpcMoveHandler moveHandler) 
 		{
 			_sceneManager = sceneManager;
+			_moveHandler = moveHandler;
 		}
-
+		public void SetMoveMap(TileMap tileMap, TileSet tileSet)
+		{
+			_moveHandler.SetMapInfo(tileMap, tileSet);
+		}
 		public void AddAction(INPCActions action)
 		{
 			Actions.Add(action);
@@ -79,6 +91,7 @@ namespace solid_game_engine.Shared.entity
 		}
 		public void SetLocation(int x, int y, Vector2 origin)
 		{
+			_origin = origin;
 			X = (x * _sceneManager.Game.Currents.TileSize) + origin.X;
 			Y = (y * _sceneManager.Game.Currents.TileSize) + origin.Y;
 		}
@@ -116,17 +129,9 @@ namespace solid_game_engine.Shared.entity
 						}
 						PlayerActionTrigger(player);
 					}
-				} else
-				{
-					NpcEntity npc = (NpcEntity)otherEntity;
-					Debug.WriteLine($"NPC) X: {npc.X}, Y: {npc.Y}");
 				}
-			} else
-			{
-				TileCollide tile = (TileCollide)otherEntity;
-				Debug.WriteLine($"Tile) X: {tile.Bounds.Position.X}, Y: {tile.Bounds.Position.Y}");
-			}
-			if (_IsPlayer)
+			} 
+			if (_IsPlayer || Pushable)
 			{
 				X -= collisionInfo.PenetrationVector.X;
 				Y -= collisionInfo.PenetrationVector.Y;
@@ -166,7 +171,8 @@ namespace solid_game_engine.Shared.entity
 
 		public void Update(GameTime gameTime)
 		{
-			_isMoving = MovementQue.Count > 0;
+			var nextNode = _moveHandler.GetNextNode();
+			_isMoving = nextNode != null && (nextNode.realX != X || nextNode.realY != Y);
 			_sprite.Update(gameTime);
 			if (RunningActionIndex == Actions.Count)
 			{
@@ -194,6 +200,14 @@ namespace solid_game_engine.Shared.entity
 					
 				}
 			}
+			
+			var reducedX = (int)(X - _origin.X) / _sceneManager.Game.Currents.TileSize;
+			var reducedY = (int)(Y - _origin.Y) / _sceneManager.Game.Currents.TileSize;
+
+			_moveHandler.SetPosition(reducedX, reducedY);
+			_moveHandler.Update(gameTime);
+			SetMoveType(gameTime);
+			
 		}
 
 		public void Draw(SpriteBatch spriteBatch)
@@ -212,6 +226,7 @@ namespace solid_game_engine.Shared.entity
 				RunningActionIndex = -1;
 				FreePlayer();
 			}
+			_moveHandler.Draw(spriteBatch);
 		}
 
 		public void DrawActions(SpriteBatch spriteBatch)
@@ -224,12 +239,34 @@ namespace solid_game_engine.Shared.entity
 
 		public void Move(GameTime gameTime, Controls dir)
 		{
-			throw new NotImplementedException();
+			var speedF = (float speed) => (int)(speed * (float)gameTime.ElapsedGameTime.TotalSeconds);
+			var speed = speedF(_speed);
+			switch (dir)
+			{
+				case Controls.UP:
+					Y -= speed;
+					_facing = Direction.UP;
+					break;
+				case Controls.DOWN:
+					Y += speed;
+					_facing = Direction.DOWN;
+					break;
+				case Controls.LEFT:
+					X -= speed;
+					_facing = Direction.LEFT;
+					break;
+				case Controls.RIGHT:
+					X += speed;
+					_facing = Direction.RIGHT;
+					break;
+			}
+			_moveHandler.SetPosition((int)X, (int)Y);
 		}
 		private string GetAnimationName()
 		{
 			string AnimeName = "";
-			if (_isMoving)
+			var ActionNotRunning = !(Actions.Count > 0 && RunningActionIndex < Actions.Count && RunningActionIndex >= 0);
+			if (_isMoving && ActionNotRunning)
 			{
 				AnimeName = "walk-";
 			} else {
@@ -251,6 +288,80 @@ namespace solid_game_engine.Shared.entity
 			}
 
 			return "face-down";
+		}
+		private void SetMoveType(GameTime gameTime)
+		{
+			if (!(Actions.Count > 0 && RunningActionIndex < Actions.Count && RunningActionIndex >= 0))
+			{
+				switch (MovementType.MovementType)
+				{
+					case MovementTypes.None:
+						_moveHandler.ClearPath();
+						break;
+					case MovementTypes.Random:
+						break;
+					case MovementTypes.FollowPath:
+						SetMoveFollowPath(gameTime);
+						break;
+					case MovementTypes.Follow:
+						break;
+					default:
+					break;
+				}
+			}
+		}
+
+		private void SetMoveFollowPath(GameTime gameTime)
+		{
+			if (X == 0 && Y == 0) return;
+			var reducedX = (X - _origin.X) / _sceneManager.Game.Currents.TileSize;
+			var reducedY = (Y - _origin.Y) / _sceneManager.Game.Currents.TileSize;
+			var nextNode = _moveHandler.GetNextNode();
+
+			if (nextNode == null)
+			{
+				if (MovementType.Start == null)
+				{
+					if (!reducedX.InRange(MovementType.Target.X - 1, MovementType.Target.X + 1) || !reducedY.InRange(MovementType.Target.Y - 1, MovementType.Target.Y + 1))
+					{
+						_moveHandler.ClearPath();
+						_moveHandler.SetPath(MovementType.Target);
+					}
+				} 
+				else
+				{
+					int rangeVariance = 1;
+					bool xCompare = reducedX.InRange(MovementType.Target.X - rangeVariance, MovementType.Target.X + rangeVariance);
+					bool yCompare = reducedY.InRange(MovementType.Target.Y - rangeVariance, MovementType.Target.Y + rangeVariance);
+					if (xCompare && yCompare)
+					{
+						_moveHandler.ClearPath();
+						_moveHandler.SetPath(MovementType.Start.Value);
+					} else
+					{
+						_moveHandler.ClearPath();
+						_moveHandler.SetPath(MovementType.Target);
+					}
+				}
+			} 
+			else
+			{
+				switch (true)
+				{
+					case var _ when X < nextNode.realX:
+						Move(gameTime, Controls.RIGHT);
+						break;
+					case var _ when X > nextNode.realX:
+						Move(gameTime, Controls.LEFT);
+						break;
+					case var _ when Y < nextNode.realY:
+						Move(gameTime, Controls.DOWN);
+						break;
+					case var _ when Y > nextNode.realY:
+						Move(gameTime, Controls.UP);
+						break;
+				}
+			}
 		}
 	}
 

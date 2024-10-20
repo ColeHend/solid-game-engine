@@ -10,6 +10,7 @@ using MonoGame.Extended;
 using MonoGame.Extended.Collisions;
 using solid_game_engine.Shared.entity;
 using solid_game_engine.Shared.entity.NPCActions;
+using solid_game_engine.Shared.Enums;
 using solid_game_engine.Shared.helpers;
 
 namespace solid_game_engine.Shared.Entities
@@ -109,7 +110,15 @@ namespace solid_game_engine.Shared.Entities
 			testNPC.SetSpritesheet(ghostTexture, 32, 48);
 			testNPC.SetLocation(15, 15, Origin);
 			testNPC.AddAction(TextBox);
-			testNPC.TriggerType = Enums.NpcTriggerTypes.Action;
+			testNPC.SetMoveMap(TileMap, tileSet);
+			testNPC._speed = 90f;
+			testNPC.MovementType = new NpcMovement()
+			{
+				MovementType = MovementTypes.FollowPath,
+				Target = new Microsoft.Xna.Framework.Vector2(10, 15),
+				Start = new Microsoft.Xna.Framework.Vector2(15, 15),
+			};
+			testNPC.TriggerType = NpcTriggerTypes.Action;
 			GameEntities.Add(testNPC);
 			this.SetCollisionTiles();
 			this.SetCollisionComponent();

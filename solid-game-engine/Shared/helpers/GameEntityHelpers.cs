@@ -9,6 +9,5 @@ namespace solid_game_engine.Shared.helpers
 {
     public static class GameEntityHelpers
     {
-      
     }
 }

@@ -43,6 +43,7 @@ public class Game1 : Game
 		services.AddSingleton<ISceneManager, SceneManager>();
 		services.AddTransient<IMap, Map>();
 		services.AddTransient<INpcEntity, NpcEntity>();
+		services.AddTransient<INpcMoveHandler, NpcMoveHandler>();
 		services.AddTransient<IPlayerEntity, PlayerEntity>();
 		 
 

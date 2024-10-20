@@ -160,26 +160,26 @@ public class PlayerEntity : IPlayerEntity
 	public void Move(GameTime gameTime, Controls dir)
 	{
 		var speedF = (float speed) => (int)(speed * (float)gameTime.ElapsedGameTime.TotalSeconds);
-			var speed = speedF(_speed);
-			switch (dir)
-			{
-				case Controls.UP:
-					Y -= speed;
-					_facing = Direction.UP;
-					break;
-				case Controls.DOWN:
-					Y += speed;
-					_facing = Direction.DOWN;
-					break;
-				case Controls.LEFT:
-					X -= speed;
-					_facing = Direction.LEFT;
-					break;
-				case Controls.RIGHT:
-					X += speed;
-					_facing = Direction.RIGHT;
-					break;
-			}
+		var speed = speedF(_speed);
+		switch (dir)
+		{
+			case Controls.UP:
+				Y -= speed;
+				_facing = Direction.UP;
+				break;
+			case Controls.DOWN:
+				Y += speed;
+				_facing = Direction.DOWN;
+				break;
+			case Controls.LEFT:
+				X -= speed;
+				_facing = Direction.LEFT;
+				break;
+			case Controls.RIGHT:
+				X += speed;
+				_facing = Direction.RIGHT;
+				break;
+		}
 	}
 
 	private string GetAnimationName()

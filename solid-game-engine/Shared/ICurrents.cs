@@ -16,5 +16,5 @@ public class Currents
 		public SpriteFont CurrentFont { get; set; }
 		public List<IPlayerEntity> Player { get; set; }
 		public int TileSize { get; set; } = 32;
-		public Vector2 ScreenResolution {get; set;} = new Vector2(800, 600);		
+		public Vector2 ScreenResolution {get; set;} = new Vector2(1280, 720);		
 }

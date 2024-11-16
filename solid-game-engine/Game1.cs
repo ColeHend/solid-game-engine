@@ -12,6 +12,9 @@ using solid_game_engine.Shared;
 using solid_game_engine.Shared.Entities;
 using solid_game_engine.Shared.entity;
 using solid_game_engine.Shared.helpers;
+using solid_game_engine.Shared.Systems;
+using solid_game_engine.Shared.Systems.interfaces;
+using Steamworks;
 
 namespace solid_game_engine;
 
@@ -24,6 +27,8 @@ public class Game1 : Game
 	public Currents Currents { get; set; } = new Currents();
 	public ISceneManager sceneManager { get; set; }
 	private IServiceProvider _serviceProvider;
+	public NetworkManager NetworkManager { get; set; }
+	private ScriptSystem _scriptSystem;
 	public Game1() : base()
 	{
 		var services = ConfigureServices();
@@ -32,7 +37,20 @@ public class Game1 : Game
 		Content.RootDirectory = "Content";
 		IsMouseVisible = true;
 		sceneManager = _serviceProvider.GetRequiredService<ISceneManager>();
-			
+		_scriptSystem = new ScriptSystem();
+		_scriptSystem.AddHostObject("Game", this);
+		_scriptSystem.AddHostObject("SceneManager", sceneManager);
+		_scriptSystem.AddHostObject("Currents", Currents);
+		_scriptSystem.AddHostObject("GraphicsDevice", _graphics);
+		
+		try
+		{
+			NetworkManager = new NetworkManager(480);
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine("Steam Client failed to initialize", e);
+		}
 	}
 
 	private IServiceCollection ConfigureServices()
@@ -45,6 +63,7 @@ public class Game1 : Game
 		services.AddTransient<INpcEntity, NpcEntity>();
 		services.AddTransient<INpcMoveHandler, NpcMoveHandler>();
 		services.AddTransient<IPlayerEntity, PlayerEntity>();
+		services.AddTransient<IMenuSystem, MenuSystem>();
 		 
 
 		return services;
@@ -52,8 +71,10 @@ public class Game1 : Game
 
 	protected override void Initialize()
 	{
+		_scriptSystem.LoadAndExecute();
 		sceneManager.Initialize(_graphics);
 		base.Initialize();
+		_scriptSystem.RunInit(CoreScripts.Game);
 	}
 
 	protected override void LoadContent()
@@ -66,6 +87,7 @@ public class Game1 : Game
 			this.LoadPlayers();
 			// ----------
 			sceneManager.LoadContent(Content);
+			_scriptSystem.RunLoadContent(CoreScripts.Game, _spriteBatch);
 	}
 
 	private void LoadPlayers()
@@ -94,11 +116,15 @@ public class Game1 : Game
 
 	protected override void Update(GameTime gameTime)
 	{
-		var kState = Keyboard.GetState();
-		var gamepad1State = GamePad.GetState(PlayerIndex.One);
-		if (gamepad1State.Buttons.Back == ButtonState.Pressed || kState.IsKeyDown(Keys.Escape)) Exit();
+		// var kState = Keyboard.GetState();
+		// var gamepad1State = GamePad.GetState(PlayerIndex.One);
+		// if (gamepad1State.Buttons.Back == ButtonState.Pressed || kState.IsKeyDown(Keys.Escape)) Exit();
+		SteamClient.RunCallbacks();
 		sceneManager.Update(gameTime);
 		base.Update(gameTime);
+		var friends = SteamFriends.GetFriends();
+		Console.WriteLine("Friends: ", JsonConvert.SerializeObject(friends));
+		_scriptSystem.RunUpdate(CoreScripts.Game, gameTime);
 	}
 
 	protected override void Draw(GameTime gameTime)
@@ -108,5 +134,12 @@ public class Game1 : Game
 		
 		sceneManager.Draw(_spriteBatch);
 		base.Draw(gameTime);
+		_scriptSystem.RunDraw(CoreScripts.Game, _spriteBatch);
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		SteamClient.Shutdown();
+		base.Dispose(disposing);
 	}
 }

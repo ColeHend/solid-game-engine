@@ -14,7 +14,8 @@ namespace solid_game_engine.Shared.Enums
 		RIGHT,
 		START,
 		A,
-		B
+		B,
+		ESC
 	}
 	public class InputWrap
 	{
@@ -176,6 +177,8 @@ namespace solid_game_engine.Shared.Enums
 					return kState.IsKeyDown(Keys.M) || kState.IsKeyDown(Keys.Enter);
 				case Controls.A:
 					return kState.IsKeyDown(Keys.Space);
+				case Controls.ESC:
+					return kState.IsKeyDown(Keys.Escape);
 				default:
 					return false;
 			}
@@ -197,6 +200,8 @@ namespace solid_game_engine.Shared.Enums
 					return gState.Buttons.Start == ButtonState.Pressed;
 				case Controls.A:
 					return gState.Buttons.A == ButtonState.Pressed;
+				case Controls.ESC:
+					return gState.Buttons.Back == ButtonState.Pressed;
 				default:
 					return false;
 			}
@@ -218,6 +223,8 @@ namespace solid_game_engine.Shared.Enums
 					return kState.IsKeyUp(Keys.M) && kState.IsKeyUp(Keys.Enter);
 				case Controls.A:
 					return kState.IsKeyUp(Keys.Space);
+				case Controls.ESC:
+					return kState.IsKeyUp(Keys.Escape);
 				default:
 					return false;
 			}
@@ -239,6 +246,8 @@ namespace solid_game_engine.Shared.Enums
 					return gState.Buttons.Start == ButtonState.Released;
 				case Controls.A:
 					return gState.Buttons.A == ButtonState.Released;
+				case Controls.ESC:
+					return gState.Buttons.Back == ButtonState.Released;
 				default:
 					return false;
 			}

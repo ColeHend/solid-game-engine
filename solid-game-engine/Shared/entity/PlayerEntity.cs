@@ -63,11 +63,10 @@ public class PlayerEntity : IPlayerEntity
 	private string _lastAnimation { get; set; } = "face-down";
 
 	public PlayerEntity(ISceneManager sceneManager)
-		{
-			_currents = sceneManager.Game.Currents;
-			_sceneManager = sceneManager;
-			
-		}
+	{
+		_currents = sceneManager.Game.Currents;
+		_sceneManager = sceneManager;
+	}
 	public void SetSpritesheet(Texture2D texture, int Width, int Height)
 	{
 		_spriteSheet = texture.GetSpriteSheet(Width, Height).AddWalking();

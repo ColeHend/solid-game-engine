@@ -13,6 +13,61 @@
 	<PropertyGroup>
 		<MonoGameExtendedPipelineReferencePath>$(MSBuildThisFileDirectory)pipeline-references</MonoGameExtendedPipelineReferencePath>
 	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <IsWindows Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true'">true</IsWindows>
+    <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">true</IsLinux>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(IsWindows)'=='true'">
+    	<DefineConstants>Windows</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(IsLinux)'=='true'">
+    <DefineConstants>Linux</DefineConstants>
+  </PropertyGroup>
+
+	<PropertyGroup>
+  	<!-- <RuntimeIdentifiers>win-x86;win-x64;linux-x86;linux-x64</RuntimeIdentifiers> -->
+	</PropertyGroup>
+
+	<!-- Windows 32-bit -->
+  <!-- <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x86'">
+    <None Include="Libraries\windows\steam_api.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<link>steam_api.dll</link>
+    </None>
+  </ItemGroup> -->
+
+  <!-- Windows 64-bit -->
+  <!-- <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64'">
+    <None Include="Libraries\windows\steam_api64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<link>steam_api64.dll</link>
+    </None>
+  </ItemGroup> -->
+
+  <!-- Linux 32-bit -->
+  <!-- <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x86'">
+    <None Include="Libraries\linux\x86\libsteam_api.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<link>libsteam_api.so</link>
+    </None>
+  </ItemGroup> -->
+
+  <!-- Linux 64-bit -->
+  <!-- <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
+    <None Include="Libraries\linux\x64\libsteam_api.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<link>libsteam_api.so</link>
+    </None>
+  </ItemGroup> -->
+
+	<!-- <ItemGroup Condition="'$(RuntimeIdentifier)' != 'win-x64' And '$(RuntimeIdentifier)' != 'win-x86' And '$(RuntimeIdentifier)' != 'linux-x86' And '$(RuntimeIdentifier)' != 'linux-x64'">
+    <None Include="Libraries\windows\steam_api64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<link>steam_api64.dll</link>
+    </None>
+  </ItemGroup> -->
+
+
   <ItemGroup>
     <None Remove="Icon.ico" />
     <None Remove="Icon.bmp" />
@@ -27,14 +82,22 @@
 		<None Include=".\Maps\*">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+		<None Include=".\scripts\*">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
 		<None Include=".\Maps\tilesets\*">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
+		<PackageReference Include="Microsoft.ClearScript.V8" Version="7.4.5" />
+	  <PackageReference Include="Microsoft.ClearScript.V8.Native.linux-x64" Version="7.4.5" />
+	  <PackageReference Include="Microsoft.ClearScript.V8.Native.win-x64" Version="7.4.5" />
+    <PackageReference Include="Facepunch.Steamworks" Version="2.3.3" />
+    <PackageReference Include="Facepunch.Steamworks.Library" Version="2.3.3" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
     <PackageReference Include="MonoGame.Extended" Version="4.0.3" />
-    <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="4.0.0" />
+    <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="4.0.3" />
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.2.1105" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.2.1105" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
